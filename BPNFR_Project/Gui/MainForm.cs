@@ -14,49 +14,70 @@ namespace Gui
     {
         SerialPort arduino_port, cont1_port, cont2_port;
         Encoder encoder_arm, encoder_probe, encoder_aut;
+        Controller controller1, controller2;
         ProgressChart chart;
         public MainForm()
         {
             InitializeComponent();
-            connectPorts();
-            initEncoders();
             Globals.all_readings = new List<Reading>();
             chart = new ProgressChart(formChart,-100,100,-100,100);
-
         }
 
-        private void connectPorts()
+        private void connectPorts(String cont1_com_port, String cont2_com_port, String arduino_com_port)
         {
             // Init
             arduino_port = new SerialPort();
-            arduino_port.PortName = "COM1"; // TODO get these from a list
+            arduino_port.PortName = arduino_com_port; // TODO get these from a list
             arduino_port.BaudRate = 9600;
             arduino_port.WriteTimeout = 100;
             arduino_port.ReadTimeout = 100;
 
             cont1_port = new SerialPort();
-            cont1_port.PortName = "COM2"; // TODO get these from a list
+            cont1_port.PortName = cont1_com_port; // TODO get these from a list
             cont1_port.BaudRate = 9600;
             cont1_port.WriteTimeout = 100;
             cont1_port.ReadTimeout = 100;
 
             cont2_port = new SerialPort();
-            cont2_port.PortName = "COM3"; // TODO get these from a list
+            cont2_port.PortName = cont2_com_port; // TODO get these from a list
             cont2_port.BaudRate = 9600;
             cont2_port.WriteTimeout = 100;
             cont2_port.ReadTimeout = 100;
 
             // Connect
-            /*
+
+            string success_message = "Connected Successfully";
+            string failure_message = "Did NOT Connect";
             try {
-            arduino_port.Open();
-            cont1_port.Open();
-            cont2_port.Open();
+                cont1_port.Open();
+                lblCont1Status.Text = success_message;
+                controller1 = new Controller(1, cont1_port, 1);
+
             } catch {
-                MessageBox.Show("Unable to establish USB connections.\n" +
-                            "Make sure you are using the correct COM ports for the Encoder and Motor Controllers");
+                lblCont1Status.Text = failure_message;
             }
-             */
+
+            try
+            {
+                cont2_port.Open();
+                lblCont1Status.Text = success_message;
+            }
+            catch
+            {
+                lblCont2Status.Text = failure_message;
+            }
+
+            try
+            {
+                arduino_port.Open();
+                lblCont1Status.Text = success_message;
+            }
+            catch
+            {
+                lblEncoderStatus.Text = failure_message;
+            }
+
+             
         }
 
         private void initEncoders()
@@ -107,6 +128,63 @@ namespace Gui
         {
 
         }
+
+        private void btnConnectSerials_Click(object sender, EventArgs e)
+        {
+            String cont1_com = "COM11";
+            String cont2_com = "COM1";
+            String encoder_com = "COM2";
+
+            connectPorts(cont1_com, cont2_com, encoder_com);
+        }
+
+        private void btnINC1_Click(object sender, EventArgs e)
+        {
+            controller1.IncMotor(1);
+        }
+
+        private void btnInitMotor1_Click(object sender, EventArgs e)
+        {
+            controller1.initMotor(1);
+        }
+
+        private void cmbBoxCont1_DropDown(object sender, EventArgs e)
+        {
+            // get updated list of available COM ports
+            string[] com_ports = SerialPort.GetPortNames();
+            if (com_ports.Length == 0)
+            {
+                com_ports = new string[1];
+                com_ports[0] = "None Available";
+            }
+            cmbBoxCont1.DataSource = com_ports;
+        }
+
+        private void cmbBoxCont2_DropDown(object sender, EventArgs e)
+        {
+            // get updated list of available COM ports
+            string[] com_ports = SerialPort.GetPortNames();
+            if (com_ports.Length == 0)
+            {
+                com_ports = new string[1];
+                com_ports[0] = "None Available";
+            }
+            cmbBoxCont2.DataSource = com_ports;
+        }
+
+        private void cmbBoxEncoder_DropDown(object sender, EventArgs e)
+        {
+            // get updated list of available COM ports
+            string[] com_ports = SerialPort.GetPortNames();
+            if (com_ports.Length == 0)
+            {
+                com_ports = new string[1];
+                com_ports[0] = "None Available";
+            }
+            cmbBoxEncoder.DataSource = com_ports;
+        }
+
+        
 
             
     }

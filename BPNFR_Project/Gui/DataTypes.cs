@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gui
 {
+
     public struct Reading {
         public double[] pos;
         public double[] ex ;
@@ -15,7 +16,8 @@ namespace Gui
     public static class Globals
     {
         public static List<Reading> all_readings;
-
+        public static String SERIAL_LOG_FILE = "serial.log";
+        public static bool LOGGING = true;
     }
 
 }
