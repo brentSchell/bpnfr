@@ -18,6 +18,12 @@ namespace Gui
         public static List<Reading> all_readings;
         public static String SERIAL_LOG_FILE = "serial.log";
         public static bool LOGGING = true;
+
+        // Flag variables for GUI Indicators
+        public static bool FLAG_CONT1_CONNECTED = false;
+        public static bool FLAG_CONT2_CONNECTED = false;
+        public static bool FLAG_ENCODER_CONNECTED = false;
+        public static bool FLAG_VNA_CONNECTED = false;
     }
 
 }

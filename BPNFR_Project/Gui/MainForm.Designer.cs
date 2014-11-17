@@ -46,9 +46,17 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.btnInitMotor1 = new System.Windows.Forms.Button();
             this.btnINC1 = new System.Windows.Forms.Button();
             this.tabResults = new System.Windows.Forms.TabPage();
+            this.indicatorCont1Connection = new System.Windows.Forms.Button();
+            this.indicatorCont2Connection = new System.Windows.Forms.Button();
+            this.indicatorEncoderConnection = new System.Windows.Forms.Button();
+            this.indicatorVNAConnection = new System.Windows.Forms.Button();
+            this.btnEStop = new System.Windows.Forms.Button();
+            this.btnDisconnectSerials = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
@@ -90,10 +98,10 @@
             this.tabControl1.Controls.Add(this.tabConfiguration);
             this.tabControl1.Controls.Add(this.tabOperation);
             this.tabControl1.Controls.Add(this.tabResults);
-            this.tabControl1.Location = new System.Drawing.Point(13, 13);
+            this.tabControl1.Location = new System.Drawing.Point(17, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(721, 396);
+            this.tabControl1.Size = new System.Drawing.Size(695, 311);
             this.tabControl1.TabIndex = 3;
             // 
             // tabConfiguration
@@ -102,13 +110,14 @@
             this.tabConfiguration.Location = new System.Drawing.Point(4, 22);
             this.tabConfiguration.Name = "tabConfiguration";
             this.tabConfiguration.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConfiguration.Size = new System.Drawing.Size(713, 370);
+            this.tabConfiguration.Size = new System.Drawing.Size(687, 285);
             this.tabConfiguration.TabIndex = 0;
             this.tabConfiguration.Text = "Configuration";
             this.tabConfiguration.UseVisualStyleBackColor = true;
             // 
             // grpBoxSerialConnections
             // 
+            this.grpBoxSerialConnections.Controls.Add(this.btnDisconnectSerials);
             this.grpBoxSerialConnections.Controls.Add(this.btnConnectSerials);
             this.grpBoxSerialConnections.Controls.Add(this.lblCont2Status);
             this.grpBoxSerialConnections.Controls.Add(this.cmbBoxCont1);
@@ -121,14 +130,14 @@
             this.grpBoxSerialConnections.Controls.Add(this.cmbBoxEncoder);
             this.grpBoxSerialConnections.Location = new System.Drawing.Point(6, 6);
             this.grpBoxSerialConnections.Name = "grpBoxSerialConnections";
-            this.grpBoxSerialConnections.Size = new System.Drawing.Size(381, 130);
+            this.grpBoxSerialConnections.Size = new System.Drawing.Size(381, 154);
             this.grpBoxSerialConnections.TabIndex = 11;
             this.grpBoxSerialConnections.TabStop = false;
             this.grpBoxSerialConnections.Text = "Serial Connections";
             // 
             // btnConnectSerials
             // 
-            this.btnConnectSerials.Location = new System.Drawing.Point(253, 101);
+            this.btnConnectSerials.Location = new System.Drawing.Point(253, 102);
             this.btnConnectSerials.Name = "btnConnectSerials";
             this.btnConnectSerials.Size = new System.Drawing.Size(121, 23);
             this.btnConnectSerials.TabIndex = 6;
@@ -224,6 +233,8 @@
             // 
             // tabOperation
             // 
+            this.tabOperation.Controls.Add(this.button2);
+            this.tabOperation.Controls.Add(this.button1);
             this.tabOperation.Controls.Add(this.btnInitMotor1);
             this.tabOperation.Controls.Add(this.btnINC1);
             this.tabOperation.Controls.Add(this.btnStart);
@@ -232,18 +243,38 @@
             this.tabOperation.Location = new System.Drawing.Point(4, 22);
             this.tabOperation.Name = "tabOperation";
             this.tabOperation.Padding = new System.Windows.Forms.Padding(3);
-            this.tabOperation.Size = new System.Drawing.Size(713, 370);
+            this.tabOperation.Size = new System.Drawing.Size(687, 285);
             this.tabOperation.TabIndex = 1;
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(181, 64);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(141, 23);
+            this.button2.TabIndex = 6;
+            this.button2.Text = "Start Control System";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(181, 35);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(141, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "Start Control System";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // btnInitMotor1
             // 
             this.btnInitMotor1.Location = new System.Drawing.Point(6, 35);
             this.btnInitMotor1.Name = "btnInitMotor1";
-            this.btnInitMotor1.Size = new System.Drawing.Size(75, 23);
+            this.btnInitMotor1.Size = new System.Drawing.Size(141, 23);
             this.btnInitMotor1.TabIndex = 4;
-            this.btnInitMotor1.Text = "Init Motor 1";
+            this.btnInitMotor1.Text = "Init Motor";
             this.btnInitMotor1.UseVisualStyleBackColor = true;
             this.btnInitMotor1.Click += new System.EventHandler(this.btnInitMotor1_Click);
             // 
@@ -251,7 +282,7 @@
             // 
             this.btnINC1.Location = new System.Drawing.Point(6, 64);
             this.btnINC1.Name = "btnINC1";
-            this.btnINC1.Size = new System.Drawing.Size(75, 23);
+            this.btnINC1.Size = new System.Drawing.Size(141, 23);
             this.btnINC1.TabIndex = 3;
             this.btnINC1.Text = "INC Motor";
             this.btnINC1.UseVisualStyleBackColor = true;
@@ -261,18 +292,92 @@
             // 
             this.tabResults.Location = new System.Drawing.Point(4, 22);
             this.tabResults.Name = "tabResults";
-            this.tabResults.Size = new System.Drawing.Size(713, 370);
+            this.tabResults.Size = new System.Drawing.Size(687, 285);
             this.tabResults.TabIndex = 2;
             this.tabResults.Text = "Results";
             this.tabResults.UseVisualStyleBackColor = true;
+            // 
+            // indicatorCont1Connection
+            // 
+            this.indicatorCont1Connection.BackColor = System.Drawing.Color.Red;
+            this.indicatorCont1Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.indicatorCont1Connection.Location = new System.Drawing.Point(17, 12);
+            this.indicatorCont1Connection.Name = "indicatorCont1Connection";
+            this.indicatorCont1Connection.Size = new System.Drawing.Size(77, 47);
+            this.indicatorCont1Connection.TabIndex = 4;
+            this.indicatorCont1Connection.Text = "Controller 1 Connection";
+            this.indicatorCont1Connection.UseVisualStyleBackColor = false;
+            // 
+            // indicatorCont2Connection
+            // 
+            this.indicatorCont2Connection.BackColor = System.Drawing.Color.Red;
+            this.indicatorCont2Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.indicatorCont2Connection.Location = new System.Drawing.Point(100, 12);
+            this.indicatorCont2Connection.Name = "indicatorCont2Connection";
+            this.indicatorCont2Connection.Size = new System.Drawing.Size(77, 47);
+            this.indicatorCont2Connection.TabIndex = 5;
+            this.indicatorCont2Connection.Text = "Controller 2 Connection";
+            this.indicatorCont2Connection.UseVisualStyleBackColor = false;
+            // 
+            // indicatorEncoderConnection
+            // 
+            this.indicatorEncoderConnection.BackColor = System.Drawing.Color.Red;
+            this.indicatorEncoderConnection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.indicatorEncoderConnection.Location = new System.Drawing.Point(183, 12);
+            this.indicatorEncoderConnection.Name = "indicatorEncoderConnection";
+            this.indicatorEncoderConnection.Size = new System.Drawing.Size(77, 47);
+            this.indicatorEncoderConnection.TabIndex = 6;
+            this.indicatorEncoderConnection.Text = "Encoder Connection";
+            this.indicatorEncoderConnection.UseVisualStyleBackColor = false;
+            // 
+            // indicatorVNAConnection
+            // 
+            this.indicatorVNAConnection.BackColor = System.Drawing.Color.Red;
+            this.indicatorVNAConnection.FlatAppearance.BorderColor = System.Drawing.Color.Red;
+            this.indicatorVNAConnection.FlatAppearance.BorderSize = 10;
+            this.indicatorVNAConnection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.indicatorVNAConnection.Location = new System.Drawing.Point(266, 12);
+            this.indicatorVNAConnection.Name = "indicatorVNAConnection";
+            this.indicatorVNAConnection.Size = new System.Drawing.Size(77, 47);
+            this.indicatorVNAConnection.TabIndex = 7;
+            this.indicatorVNAConnection.Text = "VNA Connection";
+            this.indicatorVNAConnection.UseVisualStyleBackColor = false;
+            // 
+            // btnEStop
+            // 
+            this.btnEStop.BackColor = System.Drawing.SystemColors.Control;
+            this.btnEStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnEStop.Location = new System.Drawing.Point(809, 12);
+            this.btnEStop.Name = "btnEStop";
+            this.btnEStop.Size = new System.Drawing.Size(121, 47);
+            this.btnEStop.TabIndex = 11;
+            this.btnEStop.Text = "EMERGENCY STOP";
+            this.btnEStop.UseVisualStyleBackColor = false;
+            this.btnEStop.Click += new System.EventHandler(this.btnEStop_Click);
+            // 
+            // btnDisconnectSerials
+            // 
+            this.btnDisconnectSerials.Location = new System.Drawing.Point(253, 127);
+            this.btnDisconnectSerials.Name = "btnDisconnectSerials";
+            this.btnDisconnectSerials.Size = new System.Drawing.Size(121, 23);
+            this.btnDisconnectSerials.TabIndex = 11;
+            this.btnDisconnectSerials.Text = "Disconnect All";
+            this.btnDisconnectSerials.UseVisualStyleBackColor = true;
+            this.btnDisconnectSerials.Click += new System.EventHandler(this.btnDisconnectSerials_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(829, 421);
+            this.ClientSize = new System.Drawing.Size(1232, 620);
+            this.Controls.Add(this.btnEStop);
             this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.indicatorVNAConnection);
+            this.Controls.Add(this.indicatorEncoderConnection);
+            this.Controls.Add(this.indicatorCont2Connection);
+            this.Controls.Add(this.indicatorCont1Connection);
             this.Controls.Add(this.lblEncoderPositions);
+            this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Name = "MainForm";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).EndInit();
@@ -308,6 +413,14 @@
         private System.Windows.Forms.Label lblCont1Status;
         private System.Windows.Forms.Button btnINC1;
         private System.Windows.Forms.Button btnInitMotor1;
+        public System.Windows.Forms.Button indicatorCont1Connection;
+        public System.Windows.Forms.Button indicatorCont2Connection;
+        public System.Windows.Forms.Button indicatorEncoderConnection;
+        public System.Windows.Forms.Button indicatorVNAConnection;
+        private System.Windows.Forms.Button btnEStop;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnDisconnectSerials;
     }
 }
 
