@@ -28,9 +28,9 @@ namespace Gui
             chart = new ProgressChart(formChart,-100,100,-100,100);
 
             // Start flag update thread
-            flag_worker = new Worker();
-            flag_thread = new Thread(flag_worker.updateFlags);
-            flag_thread.Start();
+            //flag_worker = new Worker();
+            //flag_thread = new Thread(flag_worker.updateFlags);
+            //flag_thread.Start();
         }
 
         private void connectPorts(String cont1_com_port, String cont2_com_port, String arduino_com_port)
@@ -162,11 +162,7 @@ namespace Gui
 
         private void btnINC1_Click(object sender, EventArgs e)
         {
-            //controller1.IncMotor(1,360.0, true);
-            //if (controller1.loadOneMotorSequence(1, 1, 10000, 360.0))
-            //    controller1.runSequence(1);
-
-            controller1.loadContinuousArmSequence(3,65.0,5.0);
+            controller1.IncMotor(1,360.0, true);
         }
 
         private void btnInitMotor1_Click(object sender, EventArgs e)
@@ -251,16 +247,17 @@ namespace Gui
 
         private void button1_Click_1(object sender, EventArgs e)
         {
+            controller1.loadContinuousArmSequence(3, 65.0, 5.0);
+
             //worker = new Worker(controller1,controller2);
             //control_system_thread = new Thread(worker.runControlSystem1);
             //control_system_thread.Start();
-            controller1.runSequence(2);
 
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            worker.requestStop();
+            controller1.runSequence(3);
         }
 
         private void btnDisconnectSerials_Click(object sender, EventArgs e)
@@ -303,6 +300,87 @@ namespace Gui
                 lblEncoderStatus.Text = failure_message;
                 Globals.FLAG_ENCODER_CONNECTED = false;
             }
+        }
+
+        private void lblMeasurementMode_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnApplyMeasurementOptions_Click(object sender, EventArgs e)
+        {
+            double critical_angle = 0.0;
+            double frequency = 0.0;
+            bool has_error = false;
+            
+            // Ensure input critical angle is valid
+            try
+            {
+                critical_angle = Double.Parse(txtBoxCriticalAngle.Text);
+                if (critical_angle <= 10.0 || critical_angle > 65.0)
+                    throw new Exception("Value must be between 10.0 and 65.0 degrees");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Invalid Critical Angle input:\n" + ex.Message);
+                has_error = true;
+            }
+
+            // Ensure input frequency is valid
+            try
+            {
+                frequency = Double.Parse(txtBoxFrequency.Text);
+                if (frequency <= 4.0 || frequency >= 9.0) // %%
+                    throw new Exception("Value must be between 4.0 and 9.0 GHz");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Invalid Frequency input:\n" + ex.Message);
+                has_error = true;
+            }
+
+            if (cmbBoxMeasurementMode.SelectedIndex < 0)
+            {
+                MessageBox.Show("Please Select a Measurement Mode.");
+                has_error = true;
+            }
+
+            if (has_error)
+                return;
+
+            // --------------------------------------------------------
+            // Compute measurement characteristics based on input
+            // --------------------------------------------------------
+
+            double wavelength = Globals.C / (frequency * 1000000000); // meters
+            double height = Globals.HEIGHT_WAVELENGTHS * wavelength; // meters
+            double sa_diameter = Globals.AUT_WIDTH + 2 * height * Math.Tan(critical_angle); // meters
+            double sa_radius = sa_diameter / Math.Sqrt(2);
+            
+            double sweep_angle = Math.Acos(1 - (sa_radius*sa_radius)/(2 * Globals.ARM_LENGTH * Globals.ARM_LENGTH));
+            sweep_angle *= 180.0 / Math.PI;
+            double max_step_angle = Math.Acos(1 - (wavelength * wavelength) / (8 * Globals.ARM_LENGTH * Globals.ARM_LENGTH));
+            max_step_angle *= 180.0 / Math.PI;
+
+            double time_factor = 0.0;
+            if (cmbBoxMeasurementMode.SelectedIndex == 0) // Continuous
+                time_factor = 500;
+            else if (cmbBoxMeasurementMode.SelectedIndex == 1) // Discrete
+                time_factor = 1000;
+
+            double duration_estimate = (sweep_angle/max_step_angle)*(360.0/max_step_angle)*time_factor;
+
+            // Output Results
+            lblMeasurementSummary.Text = "Summary:\n";
+            lblMeasurementSummary.Text += "\tScan Area Radius: " + sa_radius + " meters\n";
+            lblMeasurementSummary.Text += "\tSweep Angle:" + sweep_angle + " degrees\n";
+            lblMeasurementSummary.Text += "\tMax Step Angle:" + max_step_angle + " degrees\n";
+            lblMeasurementSummary.Text += "\tEstimated Scan Duration:" + (int)(duration_estimate/60.0) + " minutes\n";
+        }
+
+        private void lblMeasurementSummary_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

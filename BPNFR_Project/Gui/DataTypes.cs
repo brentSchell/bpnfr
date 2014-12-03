@@ -24,6 +24,12 @@ namespace Gui
         public static bool FLAG_CONT2_CONNECTED = false;
         public static bool FLAG_ENCODER_CONNECTED = false;
         public static bool FLAG_VNA_CONNECTED = false;
+
+        // System characteristic constants
+        public static double AUT_WIDTH = 0.18; // meters
+        public static double HEIGHT_WAVELENGTHS = 5; // meters
+        public static double C = 299792458; // m/s
+        public static double ARM_LENGTH = 1.10; // m (from center of column to probe)
     }
 
 }

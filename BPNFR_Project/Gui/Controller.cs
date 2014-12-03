@@ -6,8 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+
 namespace Gui
 {
+    // ------------------------------------------------------------------------------
+    // Class: Controller
+    // This object abstracts all communication to the motor controllers. All you need to
+    // do is construct it with the previously connected serial port of the controller,
+    // then you can talk to it. E.g.
+    //
+    //      Controller c = new Controller(0, port, 2);
+    //      c.InitMotor();
+    //      string status = c.getStatus(0);
+    //      etc...
+    // ------------------------------------------------------------------------------
     class Controller
     {
         SerialPort controller_port;

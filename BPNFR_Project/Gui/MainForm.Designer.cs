@@ -28,13 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnStart = new System.Windows.Forms.Button();
             this.lblEncoderPositions = new System.Windows.Forms.Label();
             this.formChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabConfiguration = new System.Windows.Forms.TabPage();
+            this.grpBoxMeasurementOptions = new System.Windows.Forms.GroupBox();
+            this.lblGHz = new System.Windows.Forms.Label();
+            this.txtBoxFrequency = new System.Windows.Forms.TextBox();
+            this.lblFrequency = new System.Windows.Forms.Label();
+            this.lblCritAngle = new System.Windows.Forms.Label();
+            this.lblMeasurementSummary = new System.Windows.Forms.Label();
+            this.txtBoxCriticalAngle = new System.Windows.Forms.TextBox();
+            this.btnApplyMeasurementOptions = new System.Windows.Forms.Button();
+            this.cmbBoxMeasurementMode = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.lblMeasurementMode = new System.Windows.Forms.Label();
             this.grpBoxSerialConnections = new System.Windows.Forms.GroupBox();
+            this.btnDisconnectSerials = new System.Windows.Forms.Button();
             this.btnConnectSerials = new System.Windows.Forms.Button();
             this.lblCont2Status = new System.Windows.Forms.Label();
             this.cmbBoxCont1 = new System.Windows.Forms.ComboBox();
@@ -56,10 +68,10 @@
             this.indicatorEncoderConnection = new System.Windows.Forms.Button();
             this.indicatorVNAConnection = new System.Windows.Forms.Button();
             this.btnEStop = new System.Windows.Forms.Button();
-            this.btnDisconnectSerials = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
+            this.grpBoxMeasurementOptions.SuspendLayout();
             this.grpBoxSerialConnections.SuspendLayout();
             this.tabOperation.SuspendLayout();
             this.SuspendLayout();
@@ -86,8 +98,8 @@
             // 
             this.formChart.Location = new System.Drawing.Point(392, 64);
             this.formChart.Name = "formChart";
-            series1.Name = "Series1";
-            this.formChart.Series.Add(series1);
+            series2.Name = "Series1";
+            this.formChart.Series.Add(series2);
             this.formChart.Size = new System.Drawing.Size(300, 300);
             this.formChart.TabIndex = 2;
             this.formChart.Text = "chart1";
@@ -101,19 +113,134 @@
             this.tabControl1.Location = new System.Drawing.Point(17, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(695, 311);
+            this.tabControl1.Size = new System.Drawing.Size(804, 376);
             this.tabControl1.TabIndex = 3;
             // 
             // tabConfiguration
             // 
+            this.tabConfiguration.Controls.Add(this.grpBoxMeasurementOptions);
             this.tabConfiguration.Controls.Add(this.grpBoxSerialConnections);
             this.tabConfiguration.Location = new System.Drawing.Point(4, 22);
             this.tabConfiguration.Name = "tabConfiguration";
             this.tabConfiguration.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConfiguration.Size = new System.Drawing.Size(687, 285);
+            this.tabConfiguration.Size = new System.Drawing.Size(796, 350);
             this.tabConfiguration.TabIndex = 0;
             this.tabConfiguration.Text = "Configuration";
             this.tabConfiguration.UseVisualStyleBackColor = true;
+            // 
+            // grpBoxMeasurementOptions
+            // 
+            this.grpBoxMeasurementOptions.Controls.Add(this.lblGHz);
+            this.grpBoxMeasurementOptions.Controls.Add(this.txtBoxFrequency);
+            this.grpBoxMeasurementOptions.Controls.Add(this.lblFrequency);
+            this.grpBoxMeasurementOptions.Controls.Add(this.lblCritAngle);
+            this.grpBoxMeasurementOptions.Controls.Add(this.lblMeasurementSummary);
+            this.grpBoxMeasurementOptions.Controls.Add(this.txtBoxCriticalAngle);
+            this.grpBoxMeasurementOptions.Controls.Add(this.btnApplyMeasurementOptions);
+            this.grpBoxMeasurementOptions.Controls.Add(this.cmbBoxMeasurementMode);
+            this.grpBoxMeasurementOptions.Controls.Add(this.label4);
+            this.grpBoxMeasurementOptions.Controls.Add(this.lblMeasurementMode);
+            this.grpBoxMeasurementOptions.Location = new System.Drawing.Point(6, 166);
+            this.grpBoxMeasurementOptions.Name = "grpBoxMeasurementOptions";
+            this.grpBoxMeasurementOptions.Size = new System.Drawing.Size(667, 135);
+            this.grpBoxMeasurementOptions.TabIndex = 12;
+            this.grpBoxMeasurementOptions.TabStop = false;
+            this.grpBoxMeasurementOptions.Text = "Measurement Options";
+            // 
+            // lblGHz
+            // 
+            this.lblGHz.AutoSize = true;
+            this.lblGHz.Location = new System.Drawing.Point(250, 47);
+            this.lblGHz.Name = "lblGHz";
+            this.lblGHz.Size = new System.Drawing.Size(28, 13);
+            this.lblGHz.TabIndex = 17;
+            this.lblGHz.Text = "GHz";
+            this.lblGHz.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtBoxFrequency
+            // 
+            this.txtBoxFrequency.Location = new System.Drawing.Point(123, 47);
+            this.txtBoxFrequency.Name = "txtBoxFrequency";
+            this.txtBoxFrequency.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxFrequency.TabIndex = 18;
+            // 
+            // lblFrequency
+            // 
+            this.lblFrequency.AutoSize = true;
+            this.lblFrequency.Location = new System.Drawing.Point(8, 47);
+            this.lblFrequency.Name = "lblFrequency";
+            this.lblFrequency.Size = new System.Drawing.Size(57, 13);
+            this.lblFrequency.TabIndex = 16;
+            this.lblFrequency.Text = "Frequency";
+            // 
+            // lblCritAngle
+            // 
+            this.lblCritAngle.AutoSize = true;
+            this.lblCritAngle.Location = new System.Drawing.Point(250, 21);
+            this.lblCritAngle.Name = "lblCritAngle";
+            this.lblCritAngle.Size = new System.Drawing.Size(47, 13);
+            this.lblCritAngle.TabIndex = 12;
+            this.lblCritAngle.Text = "Degrees";
+            this.lblCritAngle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblMeasurementSummary
+            // 
+            this.lblMeasurementSummary.AutoSize = true;
+            this.lblMeasurementSummary.Location = new System.Drawing.Point(381, 20);
+            this.lblMeasurementSummary.Name = "lblMeasurementSummary";
+            this.lblMeasurementSummary.Size = new System.Drawing.Size(172, 52);
+            this.lblMeasurementSummary.TabIndex = 14;
+            this.lblMeasurementSummary.Text = "Summary:\r\n\r\nScan Area Radius: N/A\r\nEstimated Measurement Time: N/A\r\n";
+            this.lblMeasurementSummary.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblMeasurementSummary.Click += new System.EventHandler(this.lblMeasurementSummary_Click);
+            // 
+            // txtBoxCriticalAngle
+            // 
+            this.txtBoxCriticalAngle.Location = new System.Drawing.Point(123, 21);
+            this.txtBoxCriticalAngle.Name = "txtBoxCriticalAngle";
+            this.txtBoxCriticalAngle.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxCriticalAngle.TabIndex = 13;
+            // 
+            // btnApplyMeasurementOptions
+            // 
+            this.btnApplyMeasurementOptions.Location = new System.Drawing.Point(251, 106);
+            this.btnApplyMeasurementOptions.Name = "btnApplyMeasurementOptions";
+            this.btnApplyMeasurementOptions.Size = new System.Drawing.Size(121, 23);
+            this.btnApplyMeasurementOptions.TabIndex = 6;
+            this.btnApplyMeasurementOptions.Text = "Apply Options";
+            this.btnApplyMeasurementOptions.UseVisualStyleBackColor = true;
+            this.btnApplyMeasurementOptions.Click += new System.EventHandler(this.btnApplyMeasurementOptions_Click);
+            // 
+            // cmbBoxMeasurementMode
+            // 
+            this.cmbBoxMeasurementMode.FormattingEnabled = true;
+            this.cmbBoxMeasurementMode.Items.AddRange(new object[] {
+            "Discrete Mode",
+            "Continuous Mode"});
+            this.cmbBoxMeasurementMode.Location = new System.Drawing.Point(123, 73);
+            this.cmbBoxMeasurementMode.Name = "cmbBoxMeasurementMode";
+            this.cmbBoxMeasurementMode.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxMeasurementMode.TabIndex = 1;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(8, 20);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(68, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Critical Angle";
+            // 
+            // lblMeasurementMode
+            // 
+            this.lblMeasurementMode.AutoSize = true;
+            this.lblMeasurementMode.Location = new System.Drawing.Point(6, 78);
+            this.lblMeasurementMode.Name = "lblMeasurementMode";
+            this.lblMeasurementMode.Size = new System.Drawing.Size(95, 13);
+            this.lblMeasurementMode.TabIndex = 3;
+            this.lblMeasurementMode.Text = "Mesurement Mode";
+            this.lblMeasurementMode.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblMeasurementMode.Click += new System.EventHandler(this.lblMeasurementMode_Click);
             // 
             // grpBoxSerialConnections
             // 
@@ -134,6 +261,16 @@
             this.grpBoxSerialConnections.TabIndex = 11;
             this.grpBoxSerialConnections.TabStop = false;
             this.grpBoxSerialConnections.Text = "Serial Connections";
+            // 
+            // btnDisconnectSerials
+            // 
+            this.btnDisconnectSerials.Location = new System.Drawing.Point(253, 127);
+            this.btnDisconnectSerials.Name = "btnDisconnectSerials";
+            this.btnDisconnectSerials.Size = new System.Drawing.Size(121, 23);
+            this.btnDisconnectSerials.TabIndex = 11;
+            this.btnDisconnectSerials.Text = "Disconnect All";
+            this.btnDisconnectSerials.UseVisualStyleBackColor = true;
+            this.btnDisconnectSerials.Click += new System.EventHandler(this.btnDisconnectSerials_Click);
             // 
             // btnConnectSerials
             // 
@@ -243,7 +380,7 @@
             this.tabOperation.Location = new System.Drawing.Point(4, 22);
             this.tabOperation.Name = "tabOperation";
             this.tabOperation.Padding = new System.Windows.Forms.Padding(3);
-            this.tabOperation.Size = new System.Drawing.Size(687, 285);
+            this.tabOperation.Size = new System.Drawing.Size(796, 350);
             this.tabOperation.TabIndex = 1;
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
@@ -264,7 +401,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(141, 23);
             this.button1.TabIndex = 5;
-            this.button1.Text = "Start Control System";
+            this.button1.Text = "Load Control System";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
@@ -284,7 +421,7 @@
             this.btnINC1.Name = "btnINC1";
             this.btnINC1.Size = new System.Drawing.Size(141, 23);
             this.btnINC1.TabIndex = 3;
-            this.btnINC1.Text = "INC Motor";
+            this.btnINC1.Text = "Increment Motor";
             this.btnINC1.UseVisualStyleBackColor = true;
             this.btnINC1.Click += new System.EventHandler(this.btnINC1_Click);
             // 
@@ -292,7 +429,7 @@
             // 
             this.tabResults.Location = new System.Drawing.Point(4, 22);
             this.tabResults.Name = "tabResults";
-            this.tabResults.Size = new System.Drawing.Size(687, 285);
+            this.tabResults.Size = new System.Drawing.Size(796, 350);
             this.tabResults.TabIndex = 2;
             this.tabResults.Text = "Results";
             this.tabResults.UseVisualStyleBackColor = true;
@@ -347,7 +484,7 @@
             // 
             this.btnEStop.BackColor = System.Drawing.SystemColors.Control;
             this.btnEStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnEStop.Location = new System.Drawing.Point(809, 12);
+            this.btnEStop.Location = new System.Drawing.Point(700, 12);
             this.btnEStop.Name = "btnEStop";
             this.btnEStop.Size = new System.Drawing.Size(121, 47);
             this.btnEStop.TabIndex = 11;
@@ -355,21 +492,11 @@
             this.btnEStop.UseVisualStyleBackColor = false;
             this.btnEStop.Click += new System.EventHandler(this.btnEStop_Click);
             // 
-            // btnDisconnectSerials
-            // 
-            this.btnDisconnectSerials.Location = new System.Drawing.Point(253, 127);
-            this.btnDisconnectSerials.Name = "btnDisconnectSerials";
-            this.btnDisconnectSerials.Size = new System.Drawing.Size(121, 23);
-            this.btnDisconnectSerials.TabIndex = 11;
-            this.btnDisconnectSerials.Text = "Disconnect All";
-            this.btnDisconnectSerials.UseVisualStyleBackColor = true;
-            this.btnDisconnectSerials.Click += new System.EventHandler(this.btnDisconnectSerials_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1232, 620);
+            this.ClientSize = new System.Drawing.Size(833, 453);
             this.Controls.Add(this.btnEStop);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.indicatorVNAConnection);
@@ -383,6 +510,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabConfiguration.ResumeLayout(false);
+            this.grpBoxMeasurementOptions.ResumeLayout(false);
+            this.grpBoxMeasurementOptions.PerformLayout();
             this.grpBoxSerialConnections.ResumeLayout(false);
             this.grpBoxSerialConnections.PerformLayout();
             this.tabOperation.ResumeLayout(false);
@@ -421,6 +550,17 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button btnDisconnectSerials;
+        private System.Windows.Forms.GroupBox grpBoxMeasurementOptions;
+        private System.Windows.Forms.Label lblMeasurementSummary;
+        private System.Windows.Forms.TextBox txtBoxCriticalAngle;
+        private System.Windows.Forms.Button btnApplyMeasurementOptions;
+        private System.Windows.Forms.ComboBox cmbBoxMeasurementMode;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lblMeasurementMode;
+        private System.Windows.Forms.Label lblGHz;
+        private System.Windows.Forms.TextBox txtBoxFrequency;
+        private System.Windows.Forms.Label lblFrequency;
+        private System.Windows.Forms.Label lblCritAngle;
     }
 }
 
