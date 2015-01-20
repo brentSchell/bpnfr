@@ -24,6 +24,7 @@ namespace Gui
         public MainForm()
         {
             InitializeComponent();
+            this.Text = "Bi-Polar Near Field Antenna Measurement System - Control Application";
             Globals.all_readings = new List<Reading>();
             chart = new ProgressChart(formChart,-100,100,-100,100);
 
@@ -70,6 +71,7 @@ namespace Gui
                 Globals.FLAG_CONT1_CONNECTED = false;
             }
 
+            /* %% temp disable connecting to anything but cont 1
             try
             {
                 cont2_port.Open();
@@ -92,7 +94,10 @@ namespace Gui
             {
                 lblEncoderStatus.Text = failure_message;
                 Globals.FLAG_ENCODER_CONNECTED = false;
-            }            
+            }   
+            */
+            // Update Connection Labels
+            update();
         }
 
         private void initEncoders()
@@ -158,6 +163,7 @@ namespace Gui
             if (encoder_com == null) encoder_com = "na";
 
             connectPorts(cont1_com, cont2_com, encoder_com);
+
         }
 
         private void btnINC1_Click(object sender, EventArgs e)
@@ -208,6 +214,7 @@ namespace Gui
             cmbBoxEncoder.DataSource = com_ports;
         }
 
+        // %%% TODO This method should actually test connections, and update global variables and flag colours appropriately
         public void update()
         {
             // Updates background colour of the GUI global flags
@@ -257,7 +264,9 @@ namespace Gui
 
         private void button2_Click(object sender, EventArgs e)
         {
-            controller1.runSequence(3);
+            controller1.runSequence(2);
+            //controller2.runSequence(2);
+
         }
 
         private void btnDisconnectSerials_Click(object sender, EventArgs e)
@@ -363,23 +372,89 @@ namespace Gui
             max_step_angle *= 180.0 / Math.PI;
 
             double time_factor = 0.0;
-            if (cmbBoxMeasurementMode.SelectedIndex == 0) // Continuous
+            if (cmbBoxMeasurementMode.SelectedIndex == 0) // Discrete
+            {
                 time_factor = 500;
-            else if (cmbBoxMeasurementMode.SelectedIndex == 1) // Discrete
+                Globals.MEASUREMENT_MODE = 2; 
+            }
+            else if (cmbBoxMeasurementMode.SelectedIndex == 1) // Continuous
+            {
                 time_factor = 1000;
-
+                Globals.MEASUREMENT_MODE = 1; 
+            }
             double duration_estimate = (sweep_angle/max_step_angle)*(360.0/max_step_angle)*time_factor;
 
+            // Store important variables to globals, to be used by motors
+            Globals.SWEEP_ANGLE = Math.Round(sweep_angle,2); // %% Round to 2 decimal places
+            Globals.STEP_ANGLE = Math.Round(max_step_angle,2); // %% Round to 2 decimal places
+            Globals.CRITICAL_ANGLE = Math.Round(critical_angle,2);
+            Globals.SCAN_AREA_RADIUS = Math.Round(sa_radius,2);
+
+            // %%% Add code to ensure parameters look right?
+            Globals.CONFIGURATION_READY = true;
+
             // Output Results
-            lblMeasurementSummary.Text = "Summary:\n";
-            lblMeasurementSummary.Text += "\tScan Area Radius: " + sa_radius + " meters\n";
-            lblMeasurementSummary.Text += "\tSweep Angle:" + sweep_angle + " degrees\n";
-            lblMeasurementSummary.Text += "\tMax Step Angle:" + max_step_angle + " degrees\n";
+            lblMeasurementSummary.Text = "\n";
+            lblMeasurementSummary.Text += "\tScan Area Radius: " + Globals.SCAN_AREA_RADIUS + " meters\n";
+            lblMeasurementSummary.Text += "\tSweep Angle:" + Globals.SWEEP_ANGLE + " degrees\n";
+            lblMeasurementSummary.Text += "\tMax Step Angle:" + Globals.STEP_ANGLE + " degrees\n";
             lblMeasurementSummary.Text += "\tEstimated Scan Duration:" + (int)(duration_estimate/60.0) + " minutes\n";
         }
 
         private void lblMeasurementSummary_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void btnLoadMotors_Click(object sender, EventArgs e)
+        {
+            // Start loading thread
+            
+            // Ensure everything is connected
+            /* temp %%
+            update(); // update connection status
+            if (!Globals.FLAG_ENCODER_CONNECTED || !Globals.FLAG_VNA_CONNECTED || !Globals.FLAG_CONT1_CONNECTED || !Globals.FLAG_CONT2_CONNECTED)
+            {
+                MessageBox.Show("One or more required device is disconnected. Please reconnect.");
+                return;
+            }
+            */
+
+            // Ensure everything user options are configured properly
+            if (!Globals.CONFIGURATION_READY)
+            {
+                MessageBox.Show("The current Measurement Options cannot be loaded. Please review them.");
+                return;
+            }
+
+            // Everything is configured properly, we can generate and send the sequences.
+            
+            // First, init motors
+            controller1.InitMotor(1);
+            controller1.InitMotor(2);
+            //controller2.InitMotor(1);
+            
+            if (Globals.MEASUREMENT_MODE == 1) // Continuous 
+            {
+                controller1.loadContinuousArmSequence(2, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                //controller2.loadDiscreteAUTSequence(2, Globals.SWEEP_ANGLE, Globals.STEP_ANGLE);
+
+            }
+            else if (Globals.MEASUREMENT_MODE == 2) // Discrete
+            {
+                controller1.loadDiscreteArmSweep(2, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                //controller2.loadDiscreteAUTSequence(2, Globals.SWEEP_ANGLE, Globals.STEP_ANGLE);
+            }
+            else
+            {
+                MessageBox.Show("No measurement mode is selected. Please Select a Measurement Mode.");
+                return;
+            }
+
+            Globals.MOTORS_READY = true;
+
+            // End loading thread
+            MessageBox.Show("Done uploading to motors.");
 
         }
     }
