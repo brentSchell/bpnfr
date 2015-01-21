@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnStart = new System.Windows.Forms.Button();
             this.lblEncoderPositions = new System.Windows.Forms.Label();
             this.formChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
@@ -50,6 +50,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.lblMeasurementMode = new System.Windows.Forms.Label();
             this.grpBoxSerialConnections = new System.Windows.Forms.GroupBox();
+            this.lblVNAConnectionStatus = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cmbBoxVNAConnection = new System.Windows.Forms.ComboBox();
             this.btnDisconnectSerials = new System.Windows.Forms.Button();
             this.btnConnectSerials = new System.Windows.Forms.Button();
             this.lblCont2Status = new System.Windows.Forms.Label();
@@ -72,9 +75,7 @@
             this.indicatorEncoderConnection = new System.Windows.Forms.Button();
             this.indicatorVNAConnection = new System.Windows.Forms.Button();
             this.btnEStop = new System.Windows.Forms.Button();
-            this.lblVNAConnectionStatus = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.cmbBoxVNAConnection = new System.Windows.Forms.ComboBox();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
@@ -107,8 +108,8 @@
             // 
             this.formChart.Location = new System.Drawing.Point(392, 64);
             this.formChart.Name = "formChart";
-            series1.Name = "Series1";
-            this.formChart.Series.Add(series1);
+            series3.Name = "Series1";
+            this.formChart.Series.Add(series3);
             this.formChart.Size = new System.Drawing.Size(300, 300);
             this.formChart.TabIndex = 2;
             this.formChart.Text = "chart1";
@@ -316,6 +317,34 @@
             this.grpBoxSerialConnections.TabIndex = 11;
             this.grpBoxSerialConnections.TabStop = false;
             this.grpBoxSerialConnections.Text = "Serial Connections";
+            // 
+            // lblVNAConnectionStatus
+            // 
+            this.lblVNAConnectionStatus.AutoSize = true;
+            this.lblVNAConnectionStatus.Location = new System.Drawing.Point(250, 102);
+            this.lblVNAConnectionStatus.Name = "lblVNAConnectionStatus";
+            this.lblVNAConnectionStatus.Size = new System.Drawing.Size(73, 13);
+            this.lblVNAConnectionStatus.TabIndex = 14;
+            this.lblVNAConnectionStatus.Text = "Disconnected";
+            this.lblVNAConnectionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 102);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "VNA COM Port";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // cmbBoxVNAConnection
+            // 
+            this.cmbBoxVNAConnection.FormattingEnabled = true;
+            this.cmbBoxVNAConnection.Location = new System.Drawing.Point(123, 102);
+            this.cmbBoxVNAConnection.Name = "cmbBoxVNAConnection";
+            this.cmbBoxVNAConnection.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxVNAConnection.TabIndex = 12;
             // 
             // btnDisconnectSerials
             // 
@@ -547,33 +576,13 @@
             this.btnEStop.UseVisualStyleBackColor = false;
             this.btnEStop.Click += new System.EventHandler(this.btnEStop_Click);
             // 
-            // lblVNAConnectionStatus
+            // backgroundWorker1
             // 
-            this.lblVNAConnectionStatus.AutoSize = true;
-            this.lblVNAConnectionStatus.Location = new System.Drawing.Point(250, 102);
-            this.lblVNAConnectionStatus.Name = "lblVNAConnectionStatus";
-            this.lblVNAConnectionStatus.Size = new System.Drawing.Size(73, 13);
-            this.lblVNAConnectionStatus.TabIndex = 14;
-            this.lblVNAConnectionStatus.Text = "Disconnected";
-            this.lblVNAConnectionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 102);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 13);
-            this.label2.TabIndex = 13;
-            this.label2.Text = "VNA COM Port";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // cmbBoxVNAConnection
-            // 
-            this.cmbBoxVNAConnection.FormattingEnabled = true;
-            this.cmbBoxVNAConnection.Location = new System.Drawing.Point(123, 102);
-            this.cmbBoxVNAConnection.Name = "cmbBoxVNAConnection";
-            this.cmbBoxVNAConnection.Size = new System.Drawing.Size(121, 21);
-            this.cmbBoxVNAConnection.TabIndex = 12;
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.WorkerSupportsCancellation = true;
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // MainForm
             // 
@@ -655,6 +664,7 @@
         private System.Windows.Forms.Label lblVNAConnectionStatus;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cmbBoxVNAConnection;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
 

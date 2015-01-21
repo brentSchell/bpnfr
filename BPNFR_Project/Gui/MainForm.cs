@@ -21,6 +21,7 @@ namespace Gui
 
         Worker worker, flag_worker;
         Thread control_system_thread, flag_thread;
+
         public MainForm()
         {
             InitializeComponent();
@@ -408,8 +409,19 @@ namespace Gui
 
         private void btnLoadMotors_Click(object sender, EventArgs e)
         {
-            // Start loading thread
-            
+
+            this.Enabled = false;
+            btnLoadMotors.Text = "Loading...";
+            backgroundWorker1.RunWorkerAsync();
+
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            // Load Motors Code
+
+            BackgroundWorker worker = sender as BackgroundWorker;
+
             // Ensure everything is connected
             /* temp %%
             update(); // update connection status
@@ -428,12 +440,12 @@ namespace Gui
             }
 
             // Everything is configured properly, we can generate and send the sequences.
-            
+
             // First, init motors
             controller1.InitMotor(1);
             controller1.InitMotor(2);
             //controller2.InitMotor(1);
-            
+
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
                 controller1.loadContinuousArmSequence(2, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
@@ -453,9 +465,20 @@ namespace Gui
 
             Globals.MOTORS_READY = true;
 
-            // End loading thread
             MessageBox.Show("Done uploading to motors.");
 
+           
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            btnLoadMotors.Text = "Load Motors";
+            this.Enabled = true;
         }
     }
 }
