@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnStart = new System.Windows.Forms.Button();
             this.lblEncoderPositions = new System.Windows.Forms.Label();
             this.formChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
@@ -75,7 +75,8 @@
             this.indicatorEncoderConnection = new System.Windows.Forms.Button();
             this.indicatorVNAConnection = new System.Windows.Forms.Button();
             this.btnEStop = new System.Windows.Forms.Button();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.bwLoading = new System.ComponentModel.BackgroundWorker();
+            this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
@@ -108,8 +109,8 @@
             // 
             this.formChart.Location = new System.Drawing.Point(392, 64);
             this.formChart.Name = "formChart";
-            series3.Name = "Series1";
-            this.formChart.Series.Add(series3);
+            series1.Name = "Series1";
+            this.formChart.Series.Add(series1);
             this.formChart.Size = new System.Drawing.Size(300, 300);
             this.formChart.TabIndex = 2;
             this.formChart.Text = "chart1";
@@ -485,7 +486,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(141, 23);
             this.button1.TabIndex = 5;
-            this.button1.Text = "Load Control System";
+            this.button1.Text = "Start Discrete System";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
@@ -576,13 +577,13 @@
             this.btnEStop.UseVisualStyleBackColor = false;
             this.btnEStop.Click += new System.EventHandler(this.btnEStop_Click);
             // 
-            // backgroundWorker1
+            // bwLoading
             // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.WorkerSupportsCancellation = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            this.bwLoading.WorkerReportsProgress = true;
+            this.bwLoading.WorkerSupportsCancellation = true;
+            this.bwLoading.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.bwLoading.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.bwLoading.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // MainForm
             // 
@@ -664,7 +665,8 @@
         private System.Windows.Forms.Label lblVNAConnectionStatus;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox cmbBoxVNAConnection;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.ComponentModel.BackgroundWorker bwLoading;
+        private System.ComponentModel.BackgroundWorker bwControlSystem;
     }
 }
 

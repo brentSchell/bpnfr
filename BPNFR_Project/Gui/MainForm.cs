@@ -25,7 +25,7 @@ namespace Gui
         public MainForm()
         {
             InitializeComponent();
-            this.Text = "Bi-Polar Near Field Antenna Measurement System - Control Application";
+            this.Text = "Bi-Polar Near Field Antenna Measurement System - Control Application"; // Set title
             Globals.all_readings = new List<Reading>();
             chart = new ProgressChart(formChart,-100,100,-100,100);
 
@@ -255,12 +255,10 @@ namespace Gui
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            controller1.loadContinuousArmSequence(3, 65.0, 5.0);
-
-            //worker = new Worker(controller1,controller2);
-            //control_system_thread = new Thread(worker.runControlSystem1);
-            //control_system_thread.Start();
-
+            //controller1.runSequenceBlocking(2);
+            worker = new Worker(controller1,controller2);
+            worker.runDiscreteSystem();
+           
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -412,10 +410,11 @@ namespace Gui
 
             this.Enabled = false;
             btnLoadMotors.Text = "Loading...";
-            backgroundWorker1.RunWorkerAsync();
+            bwLoading.RunWorkerAsync();
 
         }
 
+        
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             // Load Motors Code
@@ -454,8 +453,10 @@ namespace Gui
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                controller1.loadDiscreteArmSweep(2, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                //controller2.loadDiscreteAUTSequence(2, Globals.SWEEP_ANGLE, Globals.STEP_ANGLE);
+                controller1.loadDiscreteArmSweepOutwards(Globals.DS_STEP_ARM_AND_AUT_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
+                controller1.loadDiscreteArmSweepInwards(Globals.DS_STEP_ARM_AND_AUT_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                controller1.loadRATurn90Inwards(Globals.DS_TURN_RA_90_INWARD);
+                controller1.loadRATurn90Outwards(Globals.DS_TURN_RA_90_OUTWARD);
             }
             else
             {

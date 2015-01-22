@@ -41,6 +41,12 @@ namespace Gui
         public static bool MOTORS_READY = false; // i.e. motors have received control sequences, ready to run.
 
         
+
+        // Discrete Measurement Sequence Numbers
+        public static int DS_STEP_ARM_AND_AUT_OUTWARD = 3;
+        public static int DS_STEP_ARM_AND_AUT_INWARD = 4;
+        public static int DS_TURN_RA_90_OUTWARD = 5;
+        public static int DS_TURN_RA_90_INWARD = 6;
     }
 
 }

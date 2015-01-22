@@ -80,42 +80,50 @@ namespace Gui
 
         public bool InitMotor(int id)
         {
+            // Sets defaults
+            string ACTL = " 0,0,0,0,1";
+            string UNIT = " 0.0036,1";
+            string RAMP = " 1,100";
+            string VS = " 10";
+            string V = " 500";
+            string T = " 500"; // acceleration (very important). 0.5 = FAST, 1000 = SLOW
+
             string command,resp;
             //command = "reset";
             //send(command);
             //resp = recv();
 
             // configure warning flags
-            command = "ACTL" + id + " 0,0,0,0,1";
+            command = "ACTL" + id + ACTL;
             send(command);
             resp = recv(">");
 
             // set motor units, so INC commands are in degrees.
-            command = "UNIT" + id + " 0.0036,1";
+            command = "UNIT" + id + UNIT;
             send(command);
             resp = recv(">");
 
             // set motor acceleration rate %% to be modified
-            command = "RAMP" + id + " 1,100"; // 0 means linear acceleration, the 100 doesn't do anything
+            command = "RAMP" + id + RAMP; // 0 means linear acceleration, the 100 doesn't do anything
             send(command);
             resp = recv(">");
 
             // set motor start speed. This will always be really slow (10) so motors don't jerk to start
             // Start Vel = VS*0.0036 degrees/pulse
-            command = "VS" + id + " 10";
+            command = "VS" + id + VS;
             send(command);
             resp = recv(">");
 
             // set motor default running speed
             // Vel = VS*0.0036 degrees/pulse
             // %% TO BE MODIFIED
-            command = "V" + id + " 500";
+            command = "V" + id + V;
             send(command);
             resp = recv(">");
 
             // set motor default accel/decel rate
             // This is mainly used when you hit emergency stop
-            command = "T" + id + " 100";
+            command = "T" + id + T;
             send(command);
             resp = recv(">");
 
@@ -267,10 +275,39 @@ namespace Gui
 
         public bool runSequence(int seq_num)
         {
+            // Runs a sequence program, returns immediately
             string command = "run " + seq_num;
             send(command);
             string response = recv(">");
             return true;
+        }
+        
+        public bool runSequenceBlocking(int seq_num)
+        {
+            // Runs a sequence program, returns when it's done
+            string command = "run " + seq_num;
+            send(command);
+            string response = recv(">");
+
+            waitForIdle();
+
+            return true;
+        }
+
+        private void waitForIdle()
+        {
+            // polls motor controller, waiting for a sequence to finish
+            bool idle = false;
+            while (!idle)
+            {
+                string command = "R1";
+                send(command);
+                string response = recv(">");
+                if (response.Contains("System status:\r\n          Idle"))
+                {
+                    idle = true;
+                }
+            }
         }
 
         private bool SendSequence(string sequence, int seq_num)
@@ -312,60 +349,112 @@ namespace Gui
             return false;
         }
 
-        public bool loadDiscreteArmSweep(int seq_id, double delta_angle, double sweep_angle)
+        public bool loadRATurn90Outwards(int seq_id)
         {
+            // Sequence program to spin RA 90 degrees outwards %% CW? CCW?
+            string seq = "";
+            seq += "Seq " + seq_id + "\r";
+            double fast_vel = 99999;
+            double fast_start_vel = 5000;
+
+            // Rotate RA 90 degrees
+            seq += "D2 90\r";                       // set probe motor angle to 90                   
+            seq += "H2 +\r";                        // set probe motor direction CW, to point at x axis for Ey measurements
+            seq += "V2 " + fast_vel + "\r";
+            seq += "VS2 " + fast_start_vel + "\r";
+            seq += "INC2\r";
+
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadRATurn90Inwards(int seq_id)
+        {
+            // Sequence program to spin RA 90 degrees inwards %% CW? CCW?
+
+            string seq = "";
+            seq += "Seq " + seq_id + "\r";
+            double fast_vel = 99999;
+            double fast_start_vel = 5000;
+            
+            // Rotate RA 90 degrees
+            seq += "D2 90\r";                       // set probe motor angle to 90                   
+            seq += "H2 -\r";                        // set probe motor direction CW, to point at x axis for Ey measurements
+            seq += "V2 " + fast_vel + "\r";
+            seq += "VS2 " + fast_start_vel + "\r";
+            seq += "INC2\r";
+
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadDiscreteArmSweepOutwards(int seq_id, double delta_angle, double sweep_angle)
+        {
+            // Carries out the motion of the arm and RA sweeping delta_angle OUTWARDS
             string seq = "";
             seq += "Seq " + seq_id + "\r";
             double delta_arm = delta_angle;
             double delta_aut = delta_angle;
 
-            int sweep_measurements = (int)(sweep_angle/ delta_arm);
-            double vel = 10000;
-            // starting with arm facing up, probe facing up
+            double vel = 500;
+            double start_vel = 10;
+            double fast_vel = 99999; // velocity of motors for spinning
+            double fast_start_vel = 5000; // velocity of motors, in pulse/sec. Note 1 pulse is 0.0036 degrees
+
+            // Set Arm motor speed
+            seq += "D1 " + delta_angle + "\r";      // set arm motor sweep angle
+            seq += "V1 " + vel + "\r";              // set arm motor speed
+            seq += "VS1 " + start_vel + "\r";
+            seq += "H1 - \r";                       // set arm motor direction CW from center
+
+            // Set RA motor speed
+            seq += "D2 " + delta_angle + "\r";      // set probe motor sweep angle
+            seq += "V2 " + vel + "\r";              // set probe motor speed
+            seq += "VS2 " + start_vel + "\r";
+            seq += "H2 -\r";                        // set probe motor direction CCW, to counteract arm
+
+
+            // Move both motors (arm sweep outwards)
+            seq += "INCC\r";                        // SWEEP OUTWARDS
+           
+            seq += "\r\r";
             
-            seq += "[1] D1 " + delta_arm + "\r"; // arm increments
-            seq += "[2] H1 -\r"; // arm moving CW
-            seq += "[3] V1 " + vel + "\r"; // set arm speed
+            return SendSequence(seq, seq_id);
+        }
 
-            seq += "[4] D2 " + delta_arm + "\r"; // probe increments
-            seq += "[5] H2 +\r"; // probe moving CCW to counter act aut
-            seq += "[6] V2 " + vel + "\r"; // set probe speed
-            
-            // Sweep arm outwards loop
-            seq += "[7] LOOP " + sweep_measurements + "\r";
-            seq += "[8] INCC\r"; // move both motors, this line blocks until motors are done
-            
-            //  Take measurement (Ex)
-            seq += "[9] Delay 0.5\r";
-            seq += "[10] ENDL\r";
+        public bool loadDiscreteArmSweepInwards(int seq_id, double delta_angle, double sweep_angle)
+        {
+            // Carries out the motion of the arm and RA sweeping delta_angle OUTWARDS
+            string seq = "";
+            seq += "Seq " + seq_id + "\r";
+            double delta_arm = delta_angle;
+            double delta_aut = delta_angle;
 
-            // Rotate probe -90 to face Ey
-            seq += "[11] D2 -90\r";
-            seq += "[12] INC2\r";
+            double vel = 500;
+            double start_vel = 10;
+            double fast_vel = 99999; // velocity of motors for spinning
+            double fast_start_vel = 5000; // velocity of motors, in pulse/sec. Note 1 pulse is 0.0036 degrees
 
-            seq += "[13] H1 +\r"; // arm moving CCW towards center
-            seq += "[14] H2 -\r"; // probe moving CW to counter act aut
+            // Set Arm motor speed
+            seq += "D1 " + delta_angle + "\r";      // set arm motor sweep angle
+            seq += "V1 " + vel + "\r";              // set arm motor speed
+            seq += "VS1 " + start_vel + "\r";
+            seq += "H1 + \r";                       // set arm motor direction CW from center
 
-            // Sweep arm outwards loop
-            seq += "[15] LOOP " + sweep_measurements + "\r";
-            seq += "[16] INCC\r"; // move both motors, this line blocks until motors are done
-            //  Take measurement (Ey)
-            seq += "[17] Delay 0.5\r";
-            seq += "[18] ENDL\r";
+            // Set RA motor speed
+            seq += "D2 " + delta_angle + "\r";      // set probe motor sweep angle
+            seq += "V2 " + vel + "\r";              // set probe motor speed
+            seq += "VS2 " + start_vel + "\r";
+            seq += "H2 +\r";                        // set probe motor direction CCW, to counteract arm
 
-            // Rotate probe -90 to face Ey
-            seq += "[19] D2 -90\r";
-            seq += "[20] INC2\r";
 
-            // Sequence done, now increment AUT on other controller
-            // Increment probe to match AUT
-            seq += "[21] D2 " + delta_aut + "\r";
-            seq += "[22] INC2\r";
+            // Move both motors (arm sweep outwards)
+            seq += "INCC\r";                        // SWEEP OUTWARDS
+
             seq += "\r\r";
 
-            // Now start the sequence again for another sweep.
-
-            // Store sequence on motor
             return SendSequence(seq, seq_id);
         }
 
@@ -376,32 +465,60 @@ namespace Gui
 
             double delta_arm = step_angle;
             double delta_aut = step_angle;
+            double start_vel = 10; // velocity of motors, in pulse/sec. Note 1 pulse is 0.0036 degrees
             double vel = 500; // velocity of motors, in pulse/sec. Note 1 pulse is 0.0036 degrees
-            double fast_vel = 5000; // velocity of motors for spinning
+            
+            double fast_vel = 99999; // velocity of motors for spinning
+            double fast_start_vel = 5000; // velocity of motors, in pulse/sec. Note 1 pulse is 0.0036 degrees
 
             string seq = "Seq " + seq_id + "\r";
-            seq += "[1] D1 " + sweep_angle + "\r";      // set arm motor sweep angle
-            seq += "[2] V1 " + vel + "\r";              // set arm motor speed
-            seq += "[3] H1 - \r";                       // set arm motor direction CW from center
-            seq += "[4] D2 " + sweep_angle + "\r";      // set probe motor sweep angle
-            seq += "[5] V2 " + vel + "\r";              // set probe motor speed
-            seq += "[6] H2 +\r";                        // set probe motor direction CCW, to counteract arm
-            seq += "[7] INCC\r";                        // SWEEP OUTWARDS
-            seq += "[8] D2 90\r";                       // set probe motor angle to 90                   
-            seq += "[9] H2 -\r";                        // set probe motor direction CW, to point at x axis for Ey measurements
-            seq += "[10] V2 " + fast_vel + "\r";
-            seq += "[11] INC2\r";                       // ROTATE PROBE 90 DEGREES (to face x axis)
-            seq += "[12] V2 " + vel + "\r";
-            seq += "[13] H1 +\r";                       // set arm motor direction CCW towards center
-            seq += "[14] D2 " + sweep_angle + "\r";     // reset probe increment angle to sweep angle
-            seq += "[15] INCC\r";                       // SWEEP INWARDS
+            
+            seq += "D1 " + sweep_angle + "\r";      // set arm motor sweep angle
+            seq += "V1 " + vel + "\r";              // set arm motor speed
+            seq += "VS1 " + start_vel + "\r";              
+            seq += "H1 - \r";                       // set arm motor direction CW from center
 
-            seq += "[16] H2 +\r";                       // set probe motor direction CCW
-            seq += "[17] D2 90\r";                      // set probe motor angle to 90  
-            seq += "[18] V2 " + fast_vel + "\r";        // set fast vel for RA 90 degree rotation
-            seq += "[19] INC2\r";                       // ROTATE PROBE 90 DEGREES (to face y axis)
+            // Set RA motor
+            seq += "D2 " + sweep_angle + "\r";      // set probe motor sweep angle
+            seq += "V2 " + vel + "\r";              // set probe motor speed
+            seq += "VS2 " + start_vel + "\r";       
+            seq += "H2 -\r";                        // set probe motor direction CCW, to counteract arm
+
+            // Move both motors (arm sweep outwards)
+            seq += "INCC\r";                        // SWEEP OUTWARDS
+
+            // Rotate RA 90 degrees
+            seq += "D2 90\r";                       // set probe motor angle to 90                   
+            seq += "H2 +\r";                        // set probe motor direction CW, to point at x axis for Ey measurements
+            seq += "V2 " + fast_vel + "\r";
+            seq += "VS2 " + fast_start_vel + "\r";
+            seq += "INC2\r";                       // ROTATE PROBE 90 DEGREES (to face x axis)
+
+            // Set RA motor
+            seq += "V2 " + vel + "\r";
+            seq += "VS2 " + start_vel + "\r";
+            seq += "D2 " + sweep_angle + "\r";     // reset probe increment angle to sweep angle
+
+            // Set Arm motor
+            seq += "H1 +\r";                       // set arm motor direction CCW towards center
+
+            // Move both motors (arm sweep inwards)
+            seq += "INCC\r";                       // SWEEP INWARDS
+
+            // Rotate RA back 90 degrees
+            /*
+             * %% Note - I've disable this because we 
+             * only need to do it once per arm sweep to 
+             * save time
+            seq += "H2 -\r";                       // set probe motor direction CCW
+            seq += "D2 90\r";                      // set probe motor angle to 90  
+            seq += "V2 " + fast_vel + "\r";        // set fast vel for RA 90 degree rotation
+            seq += "INC2\r";                       // ROTATE PROBE 90 DEGREES (to face y axis)
+             * 
+             */
+
+            // Add end of sequence chars
             seq += "\r\r";
-
             return SendSequence(seq, seq_id);
         }
 

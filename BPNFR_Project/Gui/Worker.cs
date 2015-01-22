@@ -59,111 +59,78 @@ namespace Gui
             }
         }
 
-        public void runControlSystem1()
+        public void runDiscreteSystem()
         {
-            double ARM_MIN = 0.0;
-            double ARM_MAX = 60.0; // 60 degree sweep
-            
-            // Set absolute positions to starting positions...
-            double pos_arm = 0;
-            double pos_aut = 0;
-            double pos_probe = 0;
-            
-            double delta_arm_degree = 1.5;
-            double delta_aut_degree = 1.5;
+            /* Worker thread method to perform the discrete control system
+             * Uses system parameters stored in "Globals" for the step and sweep angles  
+             */
+            bool facingX = true;
 
-            bool measuringEx = true;
-            controller1.SetSpeed(2, 10000);
-            
-            while (pos_aut < 360.0) {
-                while (pos_arm < ARM_MAX && !_shouldStop) 
+            for (double aut_deg = 0.0; !_shouldStop && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+            {
+
+                // Sweep outwards
+                for (double arm_deg = 0.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
                 {
-                    double probe_turn = 0.0;
+                    controller1.runSequenceBlocking(Globals.DS_STEP_ARM_AND_AUT_OUTWARD);
 
-                    if (measuringEx)
+                    // Take 1st Measurement & position readings
+                    // double arm_pos1 = armEncoder.getPosition();
+                    // double measurement = vna.getMeasurement();
+                    // double arm_pos2 = armEncoder.getPosition();
+                    // double pos = arm_pos1 + arm_pos2 / 2.0;
+
+
+                    if (facingX)
                     {
-                        // Take Ex measurement
-                        probe_turn = 90.0;
+                        controller1.runSequenceBlocking(Globals.DS_TURN_RA_90_OUTWARD);
                     }
                     else
                     {
-                        // Take Ey measurement
-                        probe_turn = -90.0;
+                        controller1.runSequenceBlocking(Globals.DS_TURN_RA_90_INWARD);
                     }
-                
-                    controller1.IncMotor(2, probe_turn, true); // move probe 90 deg
-                    measuringEx = !measuringEx;
+                    facingX = !facingX;
 
-                    if (measuringEx)
-                    {
-                        // Take Ex measurement
-                    }
-                    else
-                    {
-                        // Take Ey measurement
-                    }
-
-                    controller1.IncMotor(1, -delta_arm_degree, true); // sweep arm outwards
-                    controller1.IncMotor(2, delta_arm_degree, true); // move probe in opposite direction
-
-                    // Get absolute positions, adjust to be precise
-                    pos_arm += delta_arm_degree;
-                    pos_probe -= delta_arm_degree;
+                    // Take 2nd measurement
+                    // double arm_pos1 = armEncoder.getPosition();
+                    // double measurement = vna.getMeasurement();
+                    // double arm_pos2 = armEncoder.getPosition();
+                    // double pos = arm_pos1 + arm_pos2 / 2.0;
 
                 }
 
-                // Move AUT 
-                //controller2.IncMotor(1, delta_aut_degree);
-                // Get absolute AUT position and adjust
-                pos_aut += delta_aut_degree;
-
-                // Move probe to match AUT
-                controller1.IncMotor(2, delta_aut_degree, true);
-                pos_probe += delta_aut_degree;
-
-                while (pos_arm > ARM_MIN && !_shouldStop)
+                // Sweep back inwards
+                for (double arm_deg = Globals.SWEEP_ANGLE; !_shouldStop && arm_deg > 0.0; arm_deg -= Globals.STEP_ANGLE)
                 {
-                    double probe_turn = 0.0;
+                    controller1.runSequenceBlocking(Globals.DS_STEP_ARM_AND_AUT_INWARD);
 
-                    if (measuringEx)
+                    // Take 1st Measurement & position readings
+                    // double arm_pos1 = armEncoder.getPosition();
+                    // double measurement = vna.getMeasurement();
+                    // double arm_pos2 = armEncoder.getPosition();
+                    // double pos = arm_pos1 + arm_pos2 / 2.0;
+
+
+                    if (facingX)
                     {
-                        // Take Ex measurement
-                        probe_turn = 90.0;
+                        controller1.runSequenceBlocking(Globals.DS_TURN_RA_90_OUTWARD);
                     }
                     else
                     {
-                        // Take Ey measurement
-                        probe_turn = -90.0;
+                        controller1.runSequenceBlocking(Globals.DS_TURN_RA_90_INWARD);
                     }
+                    facingX = !facingX;
 
-                    controller1.IncMotor(2, probe_turn, true); // move probe 90 deg
-                    measuringEx = !measuringEx;
-
-                    if (measuringEx)
-                    {
-                        // Take Ex measurement
-                    }
-                    else
-                    {
-                        // Take Ey measurement
-                    }
-
-                    controller1.IncMotor(1, delta_arm_degree, true); // sweep arm inwards towards middle
-                    controller1.IncMotor(2, -delta_arm_degree, true); // move probe in opposite direction
-
-                    // Get absolute positions, adjust to be precise
-                    pos_arm -= delta_arm_degree;
-                    pos_probe += delta_arm_degree;
+                    // Take 2nd measurement
+                    // double arm_pos1 = armEncoder.getPosition();
+                    // double measurement = vna.getMeasurement();
+                    // double arm_pos2 = armEncoder.getPosition();
+                    // double pos = arm_pos1 + arm_pos2 / 2.0;
 
                 }
-                // Move AUT 
-                //controller2.IncMotor(1, delta_aut_degree);
-                // Get absolute AUT position and adjust
-                pos_aut += delta_aut_degree;
 
-                // Move probe to match AUT
-                controller1.IncMotor(2, delta_aut_degree, true);
-                pos_probe += delta_aut_degree;
+                // Step AUT and repeat entire sequence
+                // controller2.runSequenceBlocking(Globals.DS_STEP_AUT); %% TODO
             }
         }
 
