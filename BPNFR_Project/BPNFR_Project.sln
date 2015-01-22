@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gui", "Gui\Gui.csproj", "{6E8A6F3E-10E1-4D23-93F5-417ABE4ECC32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VNAInterface", "VNAInterface\VNAInterface.csproj", "{951DE421-C3F8-41C9-8D76-9D768F577ECB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{6E8A6F3E-10E1-4D23-93F5-417ABE4ECC32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E8A6F3E-10E1-4D23-93F5-417ABE4ECC32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E8A6F3E-10E1-4D23-93F5-417ABE4ECC32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{951DE421-C3F8-41C9-8D76-9D768F577ECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{951DE421-C3F8-41C9-8D76-9D768F577ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{951DE421-C3F8-41C9-8D76-9D768F577ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{951DE421-C3F8-41C9-8D76-9D768F577ECB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

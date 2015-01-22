@@ -64,6 +64,7 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
+            this.btnVNACapture = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -79,6 +80,7 @@
             this.btnEStop = new System.Windows.Forms.Button();
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
+            this.bntConfigVNA = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
@@ -123,6 +125,7 @@
             // 
             // tabConfiguration
             // 
+            this.tabConfiguration.Controls.Add(this.bntConfigVNA);
             this.tabConfiguration.Controls.Add(this.grpBoxSummary);
             this.tabConfiguration.Controls.Add(this.grpBoxLoad);
             this.tabConfiguration.Controls.Add(this.grpBoxMeasurementOptions);
@@ -138,9 +141,9 @@
             // grpBoxSummary
             // 
             this.grpBoxSummary.Controls.Add(this.lblMeasurementSummary);
-            this.grpBoxSummary.Location = new System.Drawing.Point(393, 108);
+            this.grpBoxSummary.Location = new System.Drawing.Point(393, 123);
             this.grpBoxSummary.Name = "grpBoxSummary";
-            this.grpBoxSummary.Size = new System.Drawing.Size(381, 218);
+            this.grpBoxSummary.Size = new System.Drawing.Size(381, 203);
             this.grpBoxSummary.TabIndex = 12;
             this.grpBoxSummary.TabStop = false;
             this.grpBoxSummary.Text = "Summary";
@@ -449,6 +452,7 @@
             // 
             // tabOperation
             // 
+            this.tabOperation.Controls.Add(this.btnVNACapture);
             this.tabOperation.Controls.Add(this.groupBox2);
             this.tabOperation.Controls.Add(this.groupBox1);
             this.tabOperation.Controls.Add(this.formChart);
@@ -460,6 +464,16 @@
             this.tabOperation.TabIndex = 1;
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
+            // 
+            // btnVNACapture
+            // 
+            this.btnVNACapture.Location = new System.Drawing.Point(456, 19);
+            this.btnVNACapture.Name = "btnVNACapture";
+            this.btnVNACapture.Size = new System.Drawing.Size(121, 23);
+            this.btnVNACapture.TabIndex = 21;
+            this.btnVNACapture.Text = "VNA Capture";
+            this.btnVNACapture.UseVisualStyleBackColor = true;
+            this.btnVNACapture.Click += new System.EventHandler(this.btnVNACapture_Click);
             // 
             // groupBox2
             // 
@@ -609,6 +623,16 @@
             this.bwLoading.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.bwLoading.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
+            // bntConfigVNA
+            // 
+            this.bntConfigVNA.Location = new System.Drawing.Point(647, 94);
+            this.bntConfigVNA.Name = "bntConfigVNA";
+            this.bntConfigVNA.Size = new System.Drawing.Size(121, 23);
+            this.bntConfigVNA.TabIndex = 21;
+            this.bntConfigVNA.Text = "Configure VNA";
+            this.bntConfigVNA.UseVisualStyleBackColor = true;
+            this.bntConfigVNA.Click += new System.EventHandler(this.bntConfigVNA_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -697,6 +721,8 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnZeroMotors;
+        private System.Windows.Forms.Button btnVNACapture;
+        private System.Windows.Forms.Button bntConfigVNA;
     }
 }
 

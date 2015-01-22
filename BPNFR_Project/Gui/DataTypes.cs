@@ -40,6 +40,7 @@ namespace Gui
         public static int MEASUREMENT_MODE = 0;
         public static bool CONFIGURATION_READY = false; // i.e. motor controllers are ready to receive data
         public static bool MOTORS_READY = false; // i.e. motors have received control sequences, ready to run.
+        public static double FREQUENCY = 0.0; //GHz
 
         // Sequence Number ID's
         public static int SEQ_SWEEP_ARM_OUTWARD = 1;
@@ -57,6 +58,8 @@ namespace Gui
         public static double FAST_START_VEL = 5000;
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
         public static double FAST_ACCEL = 10; // 0.5 = FASTEST, 1000 = SLOWEST
+
+        List<Tuple<double,double,double,double,bool>> readings; //x,y,real,imaginary,x or y
 
     }
 

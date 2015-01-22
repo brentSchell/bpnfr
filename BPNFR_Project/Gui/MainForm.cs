@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
+using VNA;
 
 namespace Gui
 {
@@ -18,9 +19,12 @@ namespace Gui
         Encoder encoder;
         Controller controller1, controller2;
         ProgressChart chart;
+        VNAInterface vna;
+        
 
         Worker worker, flag_worker;
         Thread control_system_thread, flag_thread;
+        string gpib_conn_string = "GPIB0::9::INSTR";
 
         public MainForm()
         {
@@ -37,66 +41,97 @@ namespace Gui
 
         private void connectPorts(String cont1_com_port, String cont2_com_port, String arduino_com_port)
         {
-            // Init port settings
-            arduino_port = new SerialPort();
-            arduino_port.PortName = arduino_com_port; // TODO get these from a list
-            arduino_port.BaudRate = 9600;
-            arduino_port.WriteTimeout = 2000;
-            arduino_port.ReadTimeout = 2000;
-
-            cont1_port = new SerialPort();
-            cont1_port.PortName = cont1_com_port; 
-            cont1_port.BaudRate = 9600;
-            cont1_port.WriteTimeout = 2000;
-            cont1_port.ReadTimeout = 20000;
-            cont1_port.NewLine = "\r";
-
-            cont2_port = new SerialPort();
-            cont2_port.PortName = cont2_com_port;
-            cont2_port.BaudRate = 9600;
-            cont2_port.WriteTimeout = 100;
-            cont2_port.ReadTimeout = 1000;
-            cont2_port.NewLine = "\r";
-
-            // Connect ports
+            update(); // Update connections status
 
             string success_message = "Connected Successfully";
             string failure_message = "Did NOT Connect";
-            try {
-                cont1_port.Open();
-                lblCont1Status.Text = success_message;
-                controller1 = new Controller(1, cont1_port, 2);
-                Globals.FLAG_CONT1_CONNECTED = true;
-            } catch {
-                lblCont1Status.Text = failure_message;
-                Globals.FLAG_CONT1_CONNECTED = false;
+            // Allow/disallow connections %% should all be true
+            bool connectingEncoder = true;
+            bool connectingCont1 = true;
+            bool connectingCont2 = true;
+            bool connectingVNA = true;
+
+            // ENCODER
+            if (connectingEncoder && !Globals.FLAG_ENCODER_CONNECTED)
+            {
+                arduino_port = new SerialPort();
+                arduino_port.PortName = arduino_com_port; // TODO get these from a list
+                arduino_port.BaudRate = 9600;
+                arduino_port.WriteTimeout = 2000;
+                arduino_port.ReadTimeout = 2000;
+
+                try
+                {
+                    arduino_port.Open();
+                    lblEncoderStatus.Text = success_message;
+                    Globals.FLAG_ENCODER_CONNECTED = true;
+                }
+                catch
+                {
+                    lblEncoderStatus.Text = failure_message;
+                    Globals.FLAG_ENCODER_CONNECTED = false;
+                }   
             }
 
-            /* %% temp disable connecting to anything but cont 1
-            try
+            if (connectingCont1 && !Globals.FLAG_CONT1_CONNECTED)
             {
-                cont2_port.Open();
-                lblCont2Status.Text = success_message;
-                Globals.FLAG_CONT2_CONNECTED = true;
-            }
-            catch
-            {
-                lblCont2Status.Text = failure_message;
-                Globals.FLAG_CONT2_CONNECTED = false;
+                cont1_port = new SerialPort();
+                cont1_port.PortName = cont1_com_port;
+                cont1_port.BaudRate = 9600;
+                cont1_port.WriteTimeout = 2000;
+                cont1_port.ReadTimeout = 20000;
+                cont1_port.NewLine = "\r";
+
+                try
+                {
+                    cont1_port.Open();
+                    lblCont1Status.Text = success_message;
+                    controller1 = new Controller(1, cont1_port, 2);
+                    Globals.FLAG_CONT1_CONNECTED = true;
+                }
+                catch
+                {
+                    lblCont1Status.Text = failure_message;
+                    Globals.FLAG_CONT1_CONNECTED = false;
+                }
             }
 
-            try
+            if (connectingCont2 && !Globals.FLAG_CONT2_CONNECTED)
             {
-                arduino_port.Open();
-                lblEncoderStatus.Text = success_message;
-                Globals.FLAG_ENCODER_CONNECTED = true;
+                cont2_port = new SerialPort();
+                cont2_port.PortName = cont2_com_port;
+                cont2_port.BaudRate = 9600;
+                cont2_port.WriteTimeout = 100;
+                cont2_port.ReadTimeout = 1000;
+                cont2_port.NewLine = "\r";
+
+                try
+                {
+                    cont2_port.Open();
+                    lblCont2Status.Text = success_message;
+                    Globals.FLAG_CONT2_CONNECTED = true;
+                }
+                catch
+                {
+                    lblCont2Status.Text = failure_message;
+                    Globals.FLAG_CONT2_CONNECTED = false;
+                }
             }
-            catch
+
+            if (connectingVNA)
             {
-                lblEncoderStatus.Text = failure_message;
-                Globals.FLAG_ENCODER_CONNECTED = false;
-            }   
-            */
+                try
+                {
+                    vna = new VNAInterface(gpib_conn_string);
+                    lblVNAConnectionStatus.Text = success_message;
+                    Globals.FLAG_VNA_CONNECTED = true;
+                }
+                catch
+                {
+                    lblVNAConnectionStatus.Text = failure_message;
+                    Globals.FLAG_VNA_CONNECTED = false;
+                }
+            }
             // Update Connection Labels
             update();
         }
@@ -245,44 +280,57 @@ namespace Gui
 
         private void btnDisconnectSerials_Click(object sender, EventArgs e)
         {
-            string success_message = "Connected Successfully";
-            string failure_message = "Did NOT Connect";
+            string success_message = "Disconnected";
+            string failure_message = "Disconnected";
             try
             {
-                cont1_port.Open();
+                cont1_port.Close();
                 lblCont1Status.Text = success_message;
-                controller1 = new Controller(1, cont1_port, 2);
-                Globals.FLAG_CONT1_CONNECTED = true;
             }
             catch
             {
                 lblCont1Status.Text = failure_message;
-                Globals.FLAG_CONT1_CONNECTED = false;
             }
+            controller1 = null;
+            Globals.FLAG_CONT1_CONNECTED = false;
 
             try
             {
-                cont2_port.Open();
+                cont2_port.Close();
                 lblCont2Status.Text = success_message;
-                Globals.FLAG_CONT2_CONNECTED = true;
             }
             catch
             {
                 lblCont2Status.Text = failure_message;
-                Globals.FLAG_CONT2_CONNECTED = false;
             }
+            controller2 = null;
+            Globals.FLAG_CONT2_CONNECTED = true;
+
 
             try
             {
-                arduino_port.Open();
+                arduino_port.Close();
                 lblEncoderStatus.Text = success_message;
-                Globals.FLAG_ENCODER_CONNECTED = true;
             }
             catch
             {
                 lblEncoderStatus.Text = failure_message;
-                Globals.FLAG_ENCODER_CONNECTED = false;
             }
+            encoder = null;
+            Globals.FLAG_ENCODER_CONNECTED = false ;
+
+
+            try
+            {
+                vna.Dispose();
+                lblVNAConnectionStatus.Text = success_message;
+            }
+            catch 
+            {
+                lblVNAConnectionStatus.Text = failure_message;
+            }
+            Globals.FLAG_ENCODER_CONNECTED = false;
+
         }
 
         private void lblMeasurementMode_Click(object sender, EventArgs e)
@@ -313,8 +361,8 @@ namespace Gui
             try
             {
                 frequency = Double.Parse(txtBoxFrequency.Text);
-                if (frequency <= 4.0 || frequency >= 9.0) // %%
-                    throw new Exception("Value must be between 4.0 and 9.0 GHz");
+                if (frequency <= 2.0 || frequency >= 6.0) // %%
+                    throw new Exception("Value must be between 2.0 and 6.0 GHz");
             }
             catch (Exception ex)
             {
@@ -363,6 +411,7 @@ namespace Gui
             Globals.STEP_ANGLE = Math.Round(max_step_angle,2); // %% Round to 2 decimal places
             Globals.CRITICAL_ANGLE = Math.Round(critical_angle,2);
             Globals.SCAN_AREA_RADIUS = Math.Round(sa_radius,2);
+            Globals.FREQUENCY = Math.Round(frequency, 7);
 
             // %%% Add code to ensure parameters look right?
             Globals.CONFIGURATION_READY = true;
@@ -464,6 +513,28 @@ namespace Gui
             worker.runZeroArm();
             worker.runZeroRA();
             worker.runZeroAUT();
+        }
+
+        private void btnVNACapture_Click(object sender, EventArgs e)
+        {
+            if (Globals.FLAG_VNA_CONNECTED)
+            {
+                System.Drawing.Bitmap bm = vna.CaptureScreen();
+                bm.Save("vna_capture.bmp");
+
+                double[] final_data = vna.OutputFinalData();
+                string data = "";
+                foreach (double d in final_data) {
+                    data = data + d + "," ;
+                }
+                MessageBox.Show(data);
+            }
+        }
+
+        private void bntConfigVNA_Click(object sender, EventArgs e)
+        {
+            // %% this needs to be disabled if freq not set
+            vna.ConfigureVNA(Globals.FREQUENCY);
         }
     }
 }
