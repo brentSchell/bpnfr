@@ -30,6 +30,7 @@ namespace Gui
         public static double HEIGHT_WAVELENGTHS = 5; // meters
         public static double C = 299792458; // m/s
         public static double ARM_LENGTH = 1.10; // m (from center of column to probe)
+        public static double ANGLE_ERROR_MAX = 0.001; // degrees. Max deviation from "zero" for motors
 
         // Measurement Characteristics
         public static double CRITICAL_ANGLE = 0.0;
@@ -40,13 +41,23 @@ namespace Gui
         public static bool CONFIGURATION_READY = false; // i.e. motor controllers are ready to receive data
         public static bool MOTORS_READY = false; // i.e. motors have received control sequences, ready to run.
 
-        
+        // Sequence Number ID's
+        public static int SEQ_SWEEP_ARM_OUTWARD = 1;
+        public static int SEQ_SWEEP_ARM_INWARD = 2;
+        public static int SEQ_STEP_ARM_AND_RA_OUTWARD = 3;
+        public static int SEQ_STEP_ARM_AND_RA_INWARD = 4;
+        public static int SEQ_TURN_RA_90_OUTWARD = 5;
+        public static int SEQ_TURN_RA_90_INWARD = 6;
+        public static int SEQ_STEP_AUT = 7;
 
-        // Discrete Measurement Sequence Numbers
-        public static int DS_STEP_ARM_AND_AUT_OUTWARD = 3;
-        public static int DS_STEP_ARM_AND_AUT_INWARD = 4;
-        public static int DS_TURN_RA_90_OUTWARD = 5;
-        public static int DS_TURN_RA_90_INWARD = 6;
+        // Motor default speeds
+        public static double VEL = 500;
+        public static double START_VEL = 10;
+        public static double FAST_VEL = 99999;
+        public static double FAST_START_VEL = 5000;
+        public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
+        public static double FAST_ACCEL = 10; // 0.5 = FASTEST, 1000 = SLOWEST
+
     }
 
 }

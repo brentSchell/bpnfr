@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            this.btnStart = new System.Windows.Forms.Button();
             this.lblEncoderPositions = new System.Windows.Forms.Label();
             this.formChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -65,10 +64,13 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
-            this.button2 = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.btnInitMotor1 = new System.Windows.Forms.Button();
-            this.btnINC1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnZeroMotors = new System.Windows.Forms.Button();
             this.tabResults = new System.Windows.Forms.TabPage();
             this.indicatorCont1Connection = new System.Windows.Forms.Button();
             this.indicatorCont2Connection = new System.Windows.Forms.Button();
@@ -85,17 +87,9 @@
             this.grpBoxMeasurementOptions.SuspendLayout();
             this.grpBoxSerialConnections.SuspendLayout();
             this.tabOperation.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // btnStart
-            // 
-            this.btnStart.Location = new System.Drawing.Point(715, 6);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(75, 23);
-            this.btnStart.TabIndex = 0;
-            this.btnStart.Text = "Read Encoders";
-            this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.button1_Click);
             // 
             // lblEncoderPositions
             // 
@@ -107,7 +101,7 @@
             // 
             // formChart
             // 
-            this.formChart.Location = new System.Drawing.Point(392, 64);
+            this.formChart.Location = new System.Drawing.Point(490, 60);
             this.formChart.Name = "formChart";
             series1.Name = "Series1";
             this.formChart.Series.Add(series1);
@@ -455,11 +449,8 @@
             // 
             // tabOperation
             // 
-            this.tabOperation.Controls.Add(this.button2);
-            this.tabOperation.Controls.Add(this.button1);
-            this.tabOperation.Controls.Add(this.btnInitMotor1);
-            this.tabOperation.Controls.Add(this.btnINC1);
-            this.tabOperation.Controls.Add(this.btnStart);
+            this.tabOperation.Controls.Add(this.groupBox2);
+            this.tabOperation.Controls.Add(this.groupBox1);
             this.tabOperation.Controls.Add(this.formChart);
             this.tabOperation.ForeColor = System.Drawing.SystemColors.ControlText;
             this.tabOperation.Location = new System.Drawing.Point(4, 22);
@@ -470,19 +461,31 @@
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // groupBox2
             // 
-            this.button2.Location = new System.Drawing.Point(181, 64);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(141, 23);
-            this.button2.TabIndex = 6;
-            this.button2.Text = "Start Control System";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.groupBox2.Controls.Add(this.label3);
+            this.groupBox2.Controls.Add(this.button1);
+            this.groupBox2.Controls.Add(this.button2);
+            this.groupBox2.Location = new System.Drawing.Point(6, 95);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(390, 83);
+            this.groupBox2.TabIndex = 21;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Calibrate Motors";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 18);
+            this.label3.MaximumSize = new System.Drawing.Size(250, 100);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(151, 13);
+            this.label3.TabIndex = 20;
+            this.label3.Text = "(Description of Zeroing motors)";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(181, 35);
+            this.button1.Location = new System.Drawing.Point(243, 30);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(141, 23);
             this.button1.TabIndex = 5;
@@ -490,25 +493,46 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
-            // btnInitMotor1
+            // button2
             // 
-            this.btnInitMotor1.Location = new System.Drawing.Point(6, 35);
-            this.btnInitMotor1.Name = "btnInitMotor1";
-            this.btnInitMotor1.Size = new System.Drawing.Size(141, 23);
-            this.btnInitMotor1.TabIndex = 4;
-            this.btnInitMotor1.Text = "Init Motor";
-            this.btnInitMotor1.UseVisualStyleBackColor = true;
-            this.btnInitMotor1.Click += new System.EventHandler(this.btnInitMotor1_Click);
+            this.button2.Location = new System.Drawing.Point(243, 59);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(141, 23);
+            this.button2.TabIndex = 6;
+            this.button2.Text = "Start Control System";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
-            // btnINC1
+            // groupBox1
             // 
-            this.btnINC1.Location = new System.Drawing.Point(6, 64);
-            this.btnINC1.Name = "btnINC1";
-            this.btnINC1.Size = new System.Drawing.Size(141, 23);
-            this.btnINC1.TabIndex = 3;
-            this.btnINC1.Text = "Increment Motor";
-            this.btnINC1.UseVisualStyleBackColor = true;
-            this.btnINC1.Click += new System.EventHandler(this.btnINC1_Click);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.btnZeroMotors);
+            this.groupBox1.Location = new System.Drawing.Point(6, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(390, 83);
+            this.groupBox1.TabIndex = 20;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Calibrate Motors";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 18);
+            this.label1.MaximumSize = new System.Drawing.Size(250, 100);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(151, 13);
+            this.label1.TabIndex = 20;
+            this.label1.Text = "(Description of Zeroing motors)";
+            // 
+            // btnZeroMotors
+            // 
+            this.btnZeroMotors.Location = new System.Drawing.Point(263, 54);
+            this.btnZeroMotors.Name = "btnZeroMotors";
+            this.btnZeroMotors.Size = new System.Drawing.Size(121, 23);
+            this.btnZeroMotors.TabIndex = 13;
+            this.btnZeroMotors.Text = "Zero Motors";
+            this.btnZeroMotors.UseVisualStyleBackColor = true;
+            this.btnZeroMotors.Click += new System.EventHandler(this.btnZeroMotors_Click);
             // 
             // tabResults
             // 
@@ -612,6 +636,10 @@
             this.grpBoxSerialConnections.ResumeLayout(false);
             this.grpBoxSerialConnections.PerformLayout();
             this.tabOperation.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -619,7 +647,6 @@
 
         #endregion
 
-        private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Label lblEncoderPositions;
         private System.Windows.Forms.DataVisualization.Charting.Chart formChart;
         private System.Windows.Forms.TabControl tabControl1;
@@ -637,8 +664,6 @@
         private System.Windows.Forms.Label lblCont2Status;
         private System.Windows.Forms.Label lblEncoderStatus;
         private System.Windows.Forms.Label lblCont1Status;
-        private System.Windows.Forms.Button btnINC1;
-        private System.Windows.Forms.Button btnInitMotor1;
         public System.Windows.Forms.Button indicatorCont1Connection;
         public System.Windows.Forms.Button indicatorCont2Connection;
         public System.Windows.Forms.Button indicatorEncoderConnection;
@@ -667,6 +692,11 @@
         private System.Windows.Forms.ComboBox cmbBoxVNAConnection;
         private System.ComponentModel.BackgroundWorker bwLoading;
         private System.ComponentModel.BackgroundWorker bwControlSystem;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnZeroMotors;
     }
 }
 

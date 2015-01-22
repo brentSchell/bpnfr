@@ -15,7 +15,7 @@ namespace Gui
     public partial class MainForm : Form
     {
         SerialPort arduino_port, cont1_port, cont2_port;
-        Encoder encoder_arm, encoder_probe, encoder_aut;
+        Encoder encoder;
         Controller controller1, controller2;
         ProgressChart chart;
 
@@ -103,35 +103,11 @@ namespace Gui
 
         private void initEncoders()
         {
-            encoder_arm = new Encoder(arduino_port, 0);
-            encoder_probe = new Encoder(arduino_port, 1);
-            encoder_aut = new Encoder(arduino_port, 2);
+            encoder = new Encoder(arduino_port, 3);
+            
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            // Take a measurement
-            
-            // 1. Get encoder positions
-            int pos_arm = encoder_arm.getPosition();
-            int pos_probe = encoder_arm.getPosition();
-            int pos_aut = encoder_arm.getPosition();
-
-            // 2. Take VNA measurement
-            // VNAReader.takeMeasurement();
-
-            // 3. Convert coordinates to x,y,z relative to the AUT
-            double[] new_pos = pointFromKinematics(pos_arm,pos_probe,pos_aut);
-            Reading new_reading = new Reading();
-            new_reading.pos = new_pos;
-            // VNA measurements will be added later most likely
-            // new_reading.ex = new_ex;
-            // new_reading.ey = new_ey;
-            Globals.all_readings.Add(new_reading);
-            chart.update();
-
-            // Output motor positions to form
-            lblEncoderPositions.Text = "Arm: " + pos_arm + " Probe: " + pos_probe + " AUT: " + pos_aut;
-
         }
 
         double[] pointFromKinematics(int parm, int pprobe, int paut)
@@ -174,8 +150,7 @@ namespace Gui
 
         private void btnInitMotor1_Click(object sender, EventArgs e)
         {
-            controller1.InitMotor(1);
-            controller1.InitMotor(2);
+            
             
         }
 
@@ -256,7 +231,7 @@ namespace Gui
         private void button1_Click_1(object sender, EventArgs e)
         {
             //controller1.runSequenceBlocking(2);
-            worker = new Worker(controller1,controller2);
+            worker = new Worker(controller1,controller2,encoder);
             worker.runDiscreteSystem();
            
         }
@@ -422,7 +397,7 @@ namespace Gui
             BackgroundWorker worker = sender as BackgroundWorker;
 
             // Ensure everything is connected
-            /* temp %%
+            /* temporarily removed %%
             update(); // update connection status
             if (!Globals.FLAG_ENCODER_CONNECTED || !Globals.FLAG_VNA_CONNECTED || !Globals.FLAG_CONT1_CONNECTED || !Globals.FLAG_CONT2_CONNECTED)
             {
@@ -447,16 +422,17 @@ namespace Gui
 
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
-                controller1.loadContinuousArmSequence(2, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                controller1.loadContinuousArmSweepOutwards(Globals.SEQ_SWEEP_ARM_OUTWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                controller1.loadContinuousArmSweepInwards(Globals.SEQ_SWEEP_ARM_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
                 //controller2.loadDiscreteAUTSequence(2, Globals.SWEEP_ANGLE, Globals.STEP_ANGLE);
 
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                controller1.loadDiscreteArmSweepOutwards(Globals.DS_STEP_ARM_AND_AUT_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
-                controller1.loadDiscreteArmSweepInwards(Globals.DS_STEP_ARM_AND_AUT_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                controller1.loadRATurn90Inwards(Globals.DS_TURN_RA_90_INWARD);
-                controller1.loadRATurn90Outwards(Globals.DS_TURN_RA_90_OUTWARD);
+                controller1.loadDiscreteArmSweepOutwards(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
+                controller1.loadDiscreteArmSweepInwards(Globals.SEQ_STEP_ARM_AND_RA_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
             }
             else
             {
@@ -480,6 +456,14 @@ namespace Gui
         {
             btnLoadMotors.Text = "Load Motors";
             this.Enabled = true;
+        }
+
+        private void btnZeroMotors_Click(object sender, EventArgs e)
+        {
+            worker = new Worker(controller1, controller2, encoder);
+            worker.runZeroArm();
+            worker.runZeroRA();
+            worker.runZeroAUT();
         }
     }
 }
