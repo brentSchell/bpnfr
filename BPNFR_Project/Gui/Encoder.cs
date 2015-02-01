@@ -21,14 +21,11 @@ namespace Gui
     class Encoder
     {
         SerialPort arduino_port;
-        int encoder_count;
 
         // Inputs:  arduino_port is the pre-initialized,  and OPENED serial port of the arduino, which interfaces with the encoders.
-        //          encoder_id is the id used by the arduino to address 1 of the 3 encoders. Index should be 0 to 2
-        public Encoder(SerialPort arduino_port, int encoder_count)
+        public Encoder(SerialPort arduino_port)
         {
             this.arduino_port = arduino_port;
-            this.encoder_count = encoder_count; // should match the id being used on the arduino
         }
 
         // reads position of encoder, -1 if error
@@ -36,12 +33,50 @@ namespace Gui
         {
             // request data for encoder #id
             // should get several readings and average them
-            double pos = -1;
+           // %% TODO
 
+            /*
+            int pos = -1;
+            string msg = id + "\n";
+            arduino_port.WriteLine(msg);
+            string resp = recv();
+            string[] tokens = resp.Split(',');
+            Int16[] bytes = new byte[tokens.Length];
+            for (int i=0; i<tokens.Length; i++) {
+                bytes[i] = Int16.Parse(tokens[i]);
+            }
 
-            return pos;
+            if (bytes[0] == id && bytes.Length >= 3)
+            {
+                pos += bytes[2] << 8;
+            }
+            else
+            {
+                pos = -1;
+            }
+             * */
+            return -1;
         }
+        
+        // Blocking receive
+        private string recv()
+        {
+            String response = "";
+            // Gets bytes sent by controller
+            // wait until there is a char response from the motor
+            arduino_port.NewLine = "\n"; // change to the last character we expect
+            arduino_port.ReadTimeout = 500;
+            try
+            {
+                response = arduino_port.ReadLine();
+            }
+            catch (TimeoutException e)
+            {
+                response = "-1";
+            }
 
+            return response;
+        }
         public int setZeroPoint()
         {
             //TODO

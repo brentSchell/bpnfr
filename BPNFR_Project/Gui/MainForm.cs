@@ -22,7 +22,7 @@ namespace Gui
         VNAInterface vna;
         
 
-        Worker worker, flag_worker;
+        Worker control_system_worker, flag_worker;
         Thread control_system_thread, flag_thread;
         string gpib_conn_string = "GPIB0::9::INSTR";
 
@@ -37,6 +37,11 @@ namespace Gui
             //flag_worker = new Worker();
             //flag_thread = new Thread(flag_worker.updateFlags);
             //flag_thread.Start();
+
+            // Set default measurement values in UI
+            txtBoxCriticalAngle.Text = "45.0";
+            txtBoxFrequency.Text = "5.00";
+            cmbBoxMeasurementMode.SelectedIndex = 0; // Discrete mode default
         }
 
         private void connectPorts(String cont1_com_port, String cont2_com_port, String arduino_com_port)
@@ -138,9 +143,9 @@ namespace Gui
 
         private void initEncoders()
         {
-            encoder = new Encoder(arduino_port, 3);
-            
+            encoder = new Encoder(arduino_port);
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
         }
@@ -251,7 +256,11 @@ namespace Gui
         }
         private void btnEStop_Click(object sender, EventArgs e)
         {
-            
+            // Tell control system to stop
+            if (control_system_thread != null && control_system_worker != null)
+            {
+                control_system_worker.requestStop();
+            }
             // Send [ESC] command to all controllers
             if (cont1_port != null && cont1_port.IsOpen)
             {
@@ -263,19 +272,28 @@ namespace Gui
             }
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
+        private void btnRunSystem_Click(object sender, EventArgs e)
         {
-            //controller1.runSequenceBlocking(2);
-            worker = new Worker(controller1,controller2,encoder);
-            worker.runDiscreteSystem();
-           
+            // Run the control system asynchronously with control_system_thread
+            if (Globals.SYS_STATE == State.Zeroed)
+            {
+                control_system_worker = new Worker(controller1, controller2, encoder);
+                control_system_thread = new Thread(control_system_worker.runDiscreteSystem);
+                control_system_thread.Start();
+                Globals.SYS_STATE = State.Running;
+            }
+            else
+            {
+                MessageBox.Show("The system must be zeroed before you can perform a scan.");
+            }
+        
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             controller1.runSequence(2);
             //controller2.runSequence(2);
-
+            
         }
 
         private void btnDisconnectSerials_Click(object sender, EventArgs e)
@@ -446,14 +464,13 @@ namespace Gui
             BackgroundWorker worker = sender as BackgroundWorker;
 
             // Ensure everything is connected
-            /* temporarily removed %%
             update(); // update connection status
-            if (!Globals.FLAG_ENCODER_CONNECTED || !Globals.FLAG_VNA_CONNECTED || !Globals.FLAG_CONT1_CONNECTED || !Globals.FLAG_CONT2_CONNECTED)
+           /* if (!Globals.FLAG_ENCODER_CONNECTED || !Globals.FLAG_VNA_CONNECTED || !Globals.FLAG_CONT1_CONNECTED || !Globals.FLAG_CONT2_CONNECTED)
             {
                 MessageBox.Show("One or more required device is disconnected. Please reconnect.");
                 return;
-            }
-            */
+            }*/
+            
 
             // Ensure everything user options are configured properly
             if (!Globals.CONFIGURATION_READY)
@@ -465,6 +482,7 @@ namespace Gui
             // Everything is configured properly, we can generate and send the sequences.
 
             // First, init motors
+            bwLoading.ReportProgress(1);
             controller1.InitMotor(1);
             controller1.InitMotor(2);
             //controller2.InitMotor(1);
@@ -491,6 +509,8 @@ namespace Gui
 
             Globals.MOTORS_READY = true;
 
+            bwLoading.ReportProgress(2);
+
             MessageBox.Show("Done uploading to motors.");
 
            
@@ -498,7 +518,13 @@ namespace Gui
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-
+            if (e.ProgressPercentage == 1) {
+                lblMeasurementSummary.Text += "Loading motors controllers...";
+            } 
+            else if (e.ProgressPercentage == 2)
+            {
+                lblMeasurementSummary.Text += "Configuring VNA...";
+            }
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -509,10 +535,13 @@ namespace Gui
 
         private void btnZeroMotors_Click(object sender, EventArgs e)
         {
-            worker = new Worker(controller1, controller2, encoder);
-            worker.runZeroArm();
-            worker.runZeroRA();
-            worker.runZeroAUT();
+            // Zero 3 motors asynchronously
+
+            control_system_worker = new Worker(controller1, controller2, encoder);
+            control_system_thread = new Thread(control_system_worker.runZeroAll);
+            control_system_thread.Start();
+            Globals.SYS_STATE = State.Zeroing;
+
         }
 
         private void btnVNACapture_Click(object sender, EventArgs e)
@@ -535,6 +564,11 @@ namespace Gui
         {
             // %% this needs to be disabled if freq not set
             vna.ConfigureVNA(Globals.FREQUENCY);
+        }
+
+        private void bwControlSystem_DoWork(object sender, DoWorkEventArgs e)
+        {
+
         }
     }
 }

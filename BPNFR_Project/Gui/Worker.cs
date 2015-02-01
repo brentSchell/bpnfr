@@ -177,22 +177,41 @@ namespace Gui
             
         }
 
-        public void runZeroArm()
+        public void runZeroAll()
         {
-            // Zero's arm (straight outwards, above AUT)
-            zeroMotor(1, 1, 90.0); 
-        }
+            /*
+            // Zeros all 3 motors
+            if (!_shouldStop)
+            {
+                zeroMotor(1, 1, 90.0); // Arm
+            }
+            if (!_shouldStop)
+            {
+                zeroMotor(1, 2, 90.0); // RA
+            }
+            if (!_shouldStop)
+            {
+                zeroMotor(2, 1, 0.0);  // AUT
+            }*/
+            //temp
+            MessageBox.Show("starting Zeroing");
 
-        public void runZeroRA()
-        {
-            // Zero's RA (to the right, facing AUT x)
-            zeroMotor(1, 2, 90.0); 
-        }
+            for (int i = 0; i < 10000000 && !_shouldStop; i++)
+            {
 
-        public void runZeroAUT()
-        {
-            // Zero's AUT (y up, x right)
-            zeroMotor(2, 1, 0.0); 
+            }
+            if (!_shouldStop)
+            {
+                MessageBox.Show("done Zeroing");
+            }
+            else
+            {
+                MessageBox.Show("ended Zeroing premature");
+            }
+
+            // Update global system state
+            Globals.SYS_STATE = State.Zeroed;
+
         }
 
         private void zeroMotor(int controller_id, int motor_id, double home_angle)
@@ -222,7 +241,8 @@ namespace Gui
                 vs = Globals.FAST_START_VEL;
                 t = Globals.FAST_ACCEL;
             }
-            // temp c.SetSpeed(motor_id, v, vs, t);
+            // temp removed 
+            // c.SetSpeed(motor_id, v, vs, t);
 
             // temp %% auto set position
             //double current_pos = encoder.getPosition(motor_id);

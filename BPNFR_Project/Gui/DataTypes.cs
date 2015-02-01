@@ -13,6 +13,19 @@ namespace Gui
         public double[] ey ;
     }
 
+    // System state enumeration
+    public enum State
+    {
+        Configuring = 1,
+        Configured,
+        Zeroing,
+        Zeroed,
+        Running,
+        Ran,
+        PostProcessing,
+        DisplayingResults
+    };
+
     public static class Globals
     {
         public static List<Reading> all_readings;
@@ -59,8 +72,9 @@ namespace Gui
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
         public static double FAST_ACCEL = 10; // 0.5 = FASTEST, 1000 = SLOWEST
 
-        List<Tuple<double,double,double,double,bool>> readings; //x,y,real,imaginary,x or y
-
+        
+        public static State SYS_STATE;
+            
     }
 
 }

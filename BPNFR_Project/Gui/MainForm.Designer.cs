@@ -33,6 +33,7 @@
             this.formChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabConfiguration = new System.Windows.Forms.TabPage();
+            this.bntConfigVNA = new System.Windows.Forms.Button();
             this.grpBoxSummary = new System.Windows.Forms.GroupBox();
             this.lblMeasurementSummary = new System.Windows.Forms.Label();
             this.grpBoxLoad = new System.Windows.Forms.GroupBox();
@@ -51,7 +52,6 @@
             this.grpBoxSerialConnections = new System.Windows.Forms.GroupBox();
             this.lblVNAConnectionStatus = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.cmbBoxVNAConnection = new System.Windows.Forms.ComboBox();
             this.btnDisconnectSerials = new System.Windows.Forms.Button();
             this.btnConnectSerials = new System.Windows.Forms.Button();
             this.lblCont2Status = new System.Windows.Forms.Label();
@@ -67,8 +67,7 @@
             this.btnVNACapture = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnRunSystem = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnZeroMotors = new System.Windows.Forms.Button();
@@ -80,7 +79,6 @@
             this.btnEStop = new System.Windows.Forms.Button();
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
-            this.bntConfigVNA = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.formChart)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
@@ -137,6 +135,16 @@
             this.tabConfiguration.TabIndex = 0;
             this.tabConfiguration.Text = "Configuration";
             this.tabConfiguration.UseVisualStyleBackColor = true;
+            // 
+            // bntConfigVNA
+            // 
+            this.bntConfigVNA.Location = new System.Drawing.Point(647, 94);
+            this.bntConfigVNA.Name = "bntConfigVNA";
+            this.bntConfigVNA.Size = new System.Drawing.Size(121, 23);
+            this.bntConfigVNA.TabIndex = 21;
+            this.bntConfigVNA.Text = "Configure VNA";
+            this.bntConfigVNA.UseVisualStyleBackColor = true;
+            this.bntConfigVNA.Click += new System.EventHandler(this.bntConfigVNA_Click);
             // 
             // grpBoxSummary
             // 
@@ -264,6 +272,7 @@
             // 
             // cmbBoxMeasurementMode
             // 
+            this.cmbBoxMeasurementMode.DisplayMember = "0";
             this.cmbBoxMeasurementMode.FormattingEnabled = true;
             this.cmbBoxMeasurementMode.Items.AddRange(new object[] {
             "Discrete Mode",
@@ -297,7 +306,6 @@
             // 
             this.grpBoxSerialConnections.Controls.Add(this.lblVNAConnectionStatus);
             this.grpBoxSerialConnections.Controls.Add(this.label2);
-            this.grpBoxSerialConnections.Controls.Add(this.cmbBoxVNAConnection);
             this.grpBoxSerialConnections.Controls.Add(this.btnDisconnectSerials);
             this.grpBoxSerialConnections.Controls.Add(this.btnConnectSerials);
             this.grpBoxSerialConnections.Controls.Add(this.lblCont2Status);
@@ -331,18 +339,10 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(8, 102);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.Size = new System.Drawing.Size(29, 13);
             this.label2.TabIndex = 13;
-            this.label2.Text = "VNA COM Port";
+            this.label2.Text = "VNA";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // cmbBoxVNAConnection
-            // 
-            this.cmbBoxVNAConnection.FormattingEnabled = true;
-            this.cmbBoxVNAConnection.Location = new System.Drawing.Point(123, 102);
-            this.cmbBoxVNAConnection.Name = "cmbBoxVNAConnection";
-            this.cmbBoxVNAConnection.Size = new System.Drawing.Size(121, 21);
-            this.cmbBoxVNAConnection.TabIndex = 12;
             // 
             // btnDisconnectSerials
             // 
@@ -478,8 +478,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.button1);
-            this.groupBox2.Controls.Add(this.button2);
+            this.groupBox2.Controls.Add(this.btnRunSystem);
             this.groupBox2.Location = new System.Drawing.Point(6, 95);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(390, 83);
@@ -497,25 +496,15 @@
             this.label3.TabIndex = 20;
             this.label3.Text = "(Description of Zeroing motors)";
             // 
-            // button1
+            // btnRunSystem
             // 
-            this.button1.Location = new System.Drawing.Point(243, 30);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(141, 23);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "Start Discrete System";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(243, 59);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(141, 23);
-            this.button2.TabIndex = 6;
-            this.button2.Text = "Start Control System";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnRunSystem.Location = new System.Drawing.Point(243, 53);
+            this.btnRunSystem.Name = "btnRunSystem";
+            this.btnRunSystem.Size = new System.Drawing.Size(141, 23);
+            this.btnRunSystem.TabIndex = 5;
+            this.btnRunSystem.Text = "Run";
+            this.btnRunSystem.UseVisualStyleBackColor = true;
+            this.btnRunSystem.Click += new System.EventHandler(this.btnRunSystem_Click);
             // 
             // groupBox1
             // 
@@ -623,15 +612,9 @@
             this.bwLoading.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.bwLoading.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
-            // bntConfigVNA
+            // bwControlSystem
             // 
-            this.bntConfigVNA.Location = new System.Drawing.Point(647, 94);
-            this.bntConfigVNA.Name = "bntConfigVNA";
-            this.bntConfigVNA.Size = new System.Drawing.Size(121, 23);
-            this.bntConfigVNA.TabIndex = 21;
-            this.bntConfigVNA.Text = "Configure VNA";
-            this.bntConfigVNA.UseVisualStyleBackColor = true;
-            this.bntConfigVNA.Click += new System.EventHandler(this.bntConfigVNA_Click);
+            this.bwControlSystem.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwControlSystem_DoWork);
             // 
             // MainForm
             // 
@@ -693,8 +676,7 @@
         public System.Windows.Forms.Button indicatorEncoderConnection;
         public System.Windows.Forms.Button indicatorVNAConnection;
         private System.Windows.Forms.Button btnEStop;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnRunSystem;
         private System.Windows.Forms.Button btnDisconnectSerials;
         private System.Windows.Forms.GroupBox grpBoxMeasurementOptions;
         private System.Windows.Forms.Label lblMeasurementSummary;
@@ -713,7 +695,6 @@
         private System.Windows.Forms.Label lblLoadDescription;
         private System.Windows.Forms.Label lblVNAConnectionStatus;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox cmbBoxVNAConnection;
         private System.ComponentModel.BackgroundWorker bwLoading;
         private System.ComponentModel.BackgroundWorker bwControlSystem;
         private System.Windows.Forms.GroupBox groupBox2;
