@@ -13,6 +13,24 @@ namespace Gui
         public double[] ey ;
     }
 
+    public class Measurement{
+        private double x, y, z, re, im;
+        private bool is_x;
+        public Measurement(double x, double y, double z, bool is_x, double re, double im)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.is_x = is_x;
+            this.re = re;
+            this.im = im;
+        }
+
+        public void appendToFile(string filename) {
+            // TODO 
+            // Write readings to file
+        }
+    }
     // System state enumeration
     public enum State
     {
@@ -25,6 +43,7 @@ namespace Gui
         PostProcessing,
         DisplayingResults
     };
+
 
     public static class Globals
     {
@@ -63,17 +82,19 @@ namespace Gui
         public static int SEQ_TURN_RA_90_OUTWARD = 5;
         public static int SEQ_TURN_RA_90_INWARD = 6;
         public static int SEQ_STEP_AUT = 7;
+        public static int SEQ_AUT_360 = 8;
 
         // Motor default speeds
         public static double VEL = 500;
         public static double START_VEL = 10;
-        public static double FAST_VEL = 99999;
-        public static double FAST_START_VEL = 5000;
+        public static double FAST_VEL = 5000;
+        public static double FAST_START_VEL = 500;
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
-        public static double FAST_ACCEL = 10; // 0.5 = FASTEST, 1000 = SLOWEST
+        public static double FAST_ACCEL = 100; // 0.5 = FASTEST, 1000 = SLOWEST
 
         
         public static State SYS_STATE;
+
             
     }
 

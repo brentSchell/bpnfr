@@ -1,11 +1,12 @@
 
 #include <SPI.h>
-boolean debug = true;
+boolean debug = false;
 int CS_ARM = 3;
 int CS_RA = 4;
 int CS_AUT = 5;
 int CS = 3; 
 int MAX_TRIES = 10;
+int MEASUREMENT_COUNT = 1;
 uint16_t ABSposition_last = 0;
 uint8_t temp[2];
 
@@ -59,12 +60,22 @@ void loop()
      CS = CS_AUT;
    } else if (command == 0x34) { //ASCII '4'
      stat = getStatus();
+     
      // Send response back to master
-     Serial.print(command,DEC);
-     Serial.print(","); 
-     Serial.println(stat,DEC); 
+     Serial.write(command);
+     Serial.write(","); 
+     Serial.write(stat); 
+     Serial.write("\n"); 
+
      CS = -1;
+   } else if (command == 0x35) { // Set Encoder 1 Zero // '5'
+     setZero(1);  
+   } else if (command == 0x36) { // Set Encoder 1 Zero  '6'
+     setZero(2);     
+   } else if (command == 0x37) { // Set Encoder 1 Zero  '7'
+     setZero(3);  
    } else {
+   //  Serial.println(command);
      CS = -1;  
    }
    
@@ -72,7 +83,7 @@ void loop()
      float pos_avg = 0;
      int pos = 0;
      int fail_count = 0;
-     for (int i=0; i<10 && fail_count<MAX_TRIES; i++) { // get 10 measurements, or 10 fails then stop
+     for (int i=0; i<MEASUREMENT_COUNT && fail_count<MAX_TRIES; i++) { // get 10 measurements, or 10 fails then stop
         pos = getPosition();
         if (pos == -1) { // encoder error, try again
           fail_count++; 
@@ -85,7 +96,7 @@ void loop()
      if (fail_count == MAX_TRIES) {
        pos_avg = -1;
      } else {
-       pos_avg /= 10.0;
+       pos_avg /= (float)MEASUREMENT_COUNT;
      }
      if (debug) {
        Serial.print("Average: " );
@@ -93,12 +104,24 @@ void loop()
      }
      
      // Send response back to master
-     Serial.print(command,DEC);
-     Serial.print(","); 
-     Serial.println(pos_avg,DEC); 
-     double stop_time = micros() - start_time;
-     Serial.print("Time to get pos: ");
-     Serial.println(stop_time,DEC); 
+     //uint8_t msb = 0xF0 & (pos_avg >> 8);
+     //uint8_t lsb = pos_avg; 
+     /*Serial.print("pos: ");
+     Serial.println(pos_avg);
+     Serial.println(pos_avg,HEX);
+     Serial.println(msb,HEX);
+     Serial.println(lsb,HEX);
+     */
+     
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print((int)pos_avg,DEC);
+     Serial.write("\n");
+     
+     //double stop_time = micros() - start_time;
+     // Send time delay back
+     //Serial.print("T,");
+     //Serial.println(stop_time,DEC); 
      
    }
  
@@ -123,14 +146,25 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
    while (recieved != 0x10 && fail_count<MAX_TRIES)    //loop while encoder is not ready to send
    {
      recieved = SPI_T(0x00);    //cleck again if encoder is still working 
+     if (debug) {
+       Serial.print("received byte ");
+       Serial.println(recieved,HEX);  
+     }
      fail_count++;
      delay(2);    //wait a bit
    }
 
    temp[0] = SPI_T(0x00);    //Recieve MSB
    temp[1] = SPI_T(0x00);    // recieve LSB   
+   if (debug) {
+       Serial.print("msb ");
+       Serial.println(temp[0],HEX);  
+       Serial.print("lsb ");
+       Serial.println(temp[1],HEX);  
+   }
    
-   digitalWrite(CS,HIGH);  //just to make sure   
+   
+   digitalWrite(CS,HIGH);  
    SPI.end();    //end transmition 
    
    temp[0] &=~ 0xF0;    //mask out the first 4 bits
@@ -158,3 +192,7 @@ int getStatus() {
   return 1;
 }
 
+void setZero() {
+  
+  // TODO
+}

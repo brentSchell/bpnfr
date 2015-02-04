@@ -61,13 +61,14 @@ namespace Gui
             {
                 arduino_port = new SerialPort();
                 arduino_port.PortName = arduino_com_port; // TODO get these from a list
-                arduino_port.BaudRate = 9600;
+                arduino_port.BaudRate = 115200;
                 arduino_port.WriteTimeout = 2000;
                 arduino_port.ReadTimeout = 2000;
 
                 try
                 {
                     arduino_port.Open();
+                    encoder = new Encoder(arduino_port);
                     lblEncoderStatus.Text = success_message;
                     Globals.FLAG_ENCODER_CONNECTED = true;
                 }
@@ -113,6 +114,7 @@ namespace Gui
                 try
                 {
                     cont2_port.Open();
+                    controller2 = new Controller(2, cont2_port, 1);
                     lblCont2Status.Text = success_message;
                     Globals.FLAG_CONT2_CONNECTED = true;
                 }
@@ -277,8 +279,8 @@ namespace Gui
             // Run the control system asynchronously with control_system_thread
             if (Globals.SYS_STATE == State.Zeroed)
             {
-                control_system_worker = new Worker(controller1, controller2, encoder);
-                control_system_thread = new Thread(control_system_worker.runDiscreteSystem);
+                control_system_worker = new Worker(controller1, controller2, encoder, vna);
+                control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
                 control_system_thread.Start();
                 Globals.SYS_STATE = State.Running;
             }
@@ -485,7 +487,7 @@ namespace Gui
             bwLoading.ReportProgress(1);
             controller1.InitMotor(1);
             controller1.InitMotor(2);
-            //controller2.InitMotor(1);
+            controller2.InitMotor(1);
 
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
@@ -500,6 +502,10 @@ namespace Gui
                 controller1.loadDiscreteArmSweepInwards(Globals.SEQ_STEP_ARM_AND_RA_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
                 controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
                 controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+
+                controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
+                controller2.loadDiscreteAUT360Inwards(Globals.SEQ_AUT_360);
+
             }
             else
             {
@@ -509,9 +515,8 @@ namespace Gui
 
             Globals.MOTORS_READY = true;
 
-            bwLoading.ReportProgress(2);
 
-            MessageBox.Show("Done uploading to motors.");
+            MessageBox.Show("Motors have been configured successfully.");
 
            
         }
@@ -537,7 +542,7 @@ namespace Gui
         {
             // Zero 3 motors asynchronously
 
-            control_system_worker = new Worker(controller1, controller2, encoder);
+            control_system_worker = new Worker(controller1, controller2, encoder, vna);
             control_system_thread = new Thread(control_system_worker.runZeroAll);
             control_system_thread.Start();
             Globals.SYS_STATE = State.Zeroing;
@@ -569,6 +574,12 @@ namespace Gui
         private void bwControlSystem_DoWork(object sender, DoWorkEventArgs e)
         {
 
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            double p = encoder.getPosition(1);
+            MessageBox.Show("Pos: " + p);
         }
     }
 }

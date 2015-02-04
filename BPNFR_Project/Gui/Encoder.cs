@@ -31,31 +31,31 @@ namespace Gui
         // reads position of encoder, -1 if error
         public double getPosition(int id)
         {
-            // request data for encoder #id
-            // should get several readings and average them
-           // %% TODO
-
-            /*
-            int pos = -1;
-            string msg = id + "\n";
-            arduino_port.WriteLine(msg);
+            // Clear buffer
+            string rem = arduino_port.ReadExisting();
+            
+            //string msg = id + "\n";
+            char command = (char)(id + '0');
+            arduino_port.NewLine = "\n";
+            arduino_port.WriteLine(command + "");
+            
             string resp = recv();
+            
             string[] tokens = resp.Split(',');
-            Int16[] bytes = new byte[tokens.Length];
-            for (int i=0; i<tokens.Length; i++) {
-                bytes[i] = Int16.Parse(tokens[i]);
-            }
-
-            if (bytes[0] == id && bytes.Length >= 3)
+            double pos = -1;
+            for (int i = 0; i < tokens.Length && pos == -1; i++)
             {
-                pos += bytes[2] << 8;
+                if (tokens[i].Equals(id + "") )
+                {
+                    pos = Double.Parse(tokens[i + 1]);
+                }
             }
-            else
+            if (pos != -1)
             {
-                pos = -1;
+                // convert value from 0 to 2048
+                pos = pos * 360.0 / 4096.0;
             }
-             * */
-            return -1;
+            return pos;
         }
         
         // Blocking receive

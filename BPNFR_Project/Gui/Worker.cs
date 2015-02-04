@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
 
+using VNA;
 
 namespace Gui
 {
@@ -18,11 +19,13 @@ namespace Gui
     {
         Controller controller1, controller2;
         Encoder encoder;
-        public Worker(Controller c1, Controller c2, Encoder e)
+        VNAInterface vna;
+        public Worker(Controller c1, Controller c2, Encoder e, VNAInterface vna)
         {
             this.controller1 = c1;
             this.controller2 = c2;
             this.encoder = e;
+            this.vna = vna;
         }
 
         public Worker()
@@ -61,10 +64,57 @@ namespace Gui
             }
         }
 
+        public void runDiscreteSystem2()
+        {
+            /* 
+             * Discrete Mode AUT rotates 360 degrees (back and forth), then arm steps
+             */
+            bool facingX = true;
+
+            for (double arm_deg = 0.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            {
+
+                // Rotate AUT, collecting points along the same radius
+                for (double aut_deg = 0.0; !_shouldStop && aut_deg < Globals.SWEEP_ANGLE; aut_deg += Globals.STEP_ANGLE)
+                {
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT);
+
+                    //Measurement m = getMeasurement(facingX);
+                    //m.appendToFile("filename.txt");
+
+
+                    // Rotate RA 90 degrees to collect other point
+                    if (facingX)
+                    {
+                        controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    }
+                    else
+                    {
+                        controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    }
+                    facingX = !facingX;
+
+                    // Take 2nd measurement
+                    // double arm_pos1 = armEncoder.getPosition();
+                    // double measurement = vna.getMeasurement();
+                    // double arm_pos2 = armEncoder.getPosition();
+                    // double pos = arm_pos1 + arm_pos2 / 2.0;
+
+                }
+                
+                // Step arm out once
+                controller1.runSequence(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);
+                
+                // Spin AUT back 360 degrees (blocking)
+                controller2.runSequenceBlocking(Globals.SEQ_AUT_360);
+
+            }
+        }
+
         public void runDiscreteSystem()
         {
-            /* Worker thread method to perform the discrete control system
-             * Uses system parameters stored in "Globals" for the step and sweep angles  
+            /* 
+             * Discrete Mode where arm moves out then in, then the aut steps, and repeat
              */
             bool facingX = true;
 
@@ -77,10 +127,10 @@ namespace Gui
                     controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);
 
                     // Take 1st Measurement & position readings
-                    // double arm_pos1 = armEncoder.getPosition();
-                    // double measurement = vna.getMeasurement();
+                    // double arm_pos1 = encoder.getPosition();
+                    // double measurement = vna.getData();
                     // double arm_pos2 = armEncoder.getPosition();
-                    // double pos = arm_pos1 + arm_pos2 / 2.0;
+                     //double pos = arm_pos1 + arm_pos2 / 2.0;
 
 
                     if (facingX)
@@ -177,40 +227,61 @@ namespace Gui
             
         }
 
+        private Measurement getMeasurement(bool is_x)
+        {
+            
+            double arm_pos1 = encoder.getPosition(1);
+            double ra_pos1 = encoder.getPosition(2);
+            double aut_pos1 = encoder.getPosition(3);
+
+            double[] e_field = vna.OutputFinalData();
+
+            double arm_pos2 = encoder.getPosition(1);
+            double ra_pos2 = encoder.getPosition(2);
+            double aut_pos2 = encoder.getPosition(3);
+
+            // get transformation from angles to [x,y]
+            double x = 0.0;
+            double y = 0.0;
+            Measurement m = new Measurement(x, y, 10.0, is_x, e_field[0], e_field[1]);
+            return m;
+        }
+
         public void runZeroAll()
         {
-            /*
+            //temp
+            MessageBox.Show("starting Zeroing");
+            
             // Zeros all 3 motors
+            /* temp disable 
             if (!_shouldStop)
             {
-                zeroMotor(1, 1, 90.0); // Arm
+                zeroMotor(1, 1, 0.0); // Arm
             }
             if (!_shouldStop)
             {
                 zeroMotor(1, 2, 90.0); // RA
             }
+             * */
             if (!_shouldStop)
             {
                 zeroMotor(2, 1, 0.0);  // AUT
-            }*/
-            //temp
-            MessageBox.Show("starting Zeroing");
-
-            for (int i = 0; i < 10000000 && !_shouldStop; i++)
-            {
-
             }
+            
+
+            
             if (!_shouldStop)
             {
-                MessageBox.Show("done Zeroing");
+                MessageBox.Show("Done Zeroing Successfully");
+                // Update global system state
+                Globals.SYS_STATE = State.Zeroed;
             }
             else
             {
                 MessageBox.Show("ended Zeroing premature");
             }
 
-            // Update global system state
-            Globals.SYS_STATE = State.Zeroed;
+            
 
         }
 
@@ -241,25 +312,24 @@ namespace Gui
                 vs = Globals.FAST_START_VEL;
                 t = Globals.FAST_ACCEL;
             }
-            // temp removed 
-            // c.SetSpeed(motor_id, v, vs, t);
+            c.SetSpeed(motor_id, v, vs, t);
 
-            // temp %% auto set position
-            //double current_pos = encoder.getPosition(motor_id);
-            double current_pos = 180.0;
+            double current_pos = encoder.getPosition(motor_id);
             home_angle = 0.0;
 
             while (!_shouldStop && Math.Abs(current_pos - home_angle) > Globals.ANGLE_ERROR_MAX)
             {
                 double inc_amount = Math.Round(current_pos - home_angle, 2);
-                
+                if (inc_amount > 180.0)
+                {
+                    inc_amount -= 360.0;
+                }
                 // Move motor, blocks until the motor stops moving
-                // temp c.IncMotor(motor_id, inc_amount, true);
+                 c.IncMotor(motor_id, inc_amount, true);
                 
                 // Get new motor position
-                //current_pos = encoder.getPosition(motor_id);
-                // temp %%
-                current_pos *= 0.5;
+                current_pos = encoder.getPosition(motor_id);
+
             }
 
         }

@@ -180,14 +180,10 @@ namespace Gui
             send(command);
             response = recv(">");
 
-            /*
             if (blocking)
             {
-                while (GetStatus() != 0)
-                {
-
-                }
-            }*/
+                waitForIdle();
+            }
 
             return true;
         }
@@ -515,11 +511,37 @@ namespace Gui
         }
 
         // %% TODO Generate and send AUT sequence
-        public bool loadDiscreteAUTSequence(int seq_id, double step_angle)
+        public bool loadDiscreteAUTStepOutwards(int seq_id, double step_angle)
         {
-            return true;
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 + \r";                               // Outward %%                
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "INC1";
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
         }
 
+        public bool loadDiscreteAUT360Inwards(int seq_id)
+        {
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 360.0 \r";               // set aut step angle
+            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.FAST_START_VEL + "\r";
+            seq += "H1 - \r";                               // Inward %%                
+            seq += "T1 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "INC1";
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
 
 
         public bool EStop()
