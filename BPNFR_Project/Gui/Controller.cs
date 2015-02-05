@@ -339,6 +339,7 @@ namespace Gui
                 // Motor replied with "Delete (Y/N)?
                 command = "Y";
                 send(command);
+                Thread.Sleep(5000); // let controller delete sequence, sometimes it takes a few seconds.
                 response = recv(">");
 
                 // tell controller to download a sequence program
@@ -346,10 +347,10 @@ namespace Gui
                 send(command);
                 response = recv(".");
 
-                Thread.Sleep(2000); // let controller read sequence and respond.
 
                 // send sequence string
                 send(sequence);
+                Thread.Sleep(5000); // let controller read sequence and respond.
                 response = recv(">");
                 if (response.Contains("Completed"))
                     return true;

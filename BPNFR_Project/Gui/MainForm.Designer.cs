@@ -37,6 +37,9 @@
             this.lblLoadDescription = new System.Windows.Forms.Label();
             this.btnLoadMotors = new System.Windows.Forms.Button();
             this.grpBoxMeasurementOptions = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txtBoxLabel = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.lblGHz = new System.Windows.Forms.Label();
             this.txtBoxFrequency = new System.Windows.Forms.TextBox();
             this.lblFrequency = new System.Windows.Forms.Label();
@@ -61,8 +64,6 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
-            this.btnVNACapture = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.btnRunSystem = new System.Windows.Forms.Button();
@@ -77,9 +78,8 @@
             this.btnEStop = new System.Windows.Forms.Button();
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtBoxLabel = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.lblScanStatus = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -89,6 +89,7 @@
             this.tabOperation.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblEncoderPositions
@@ -197,6 +198,32 @@
             this.grpBoxMeasurementOptions.TabIndex = 12;
             this.grpBoxMeasurementOptions.TabStop = false;
             this.grpBoxMeasurementOptions.Text = "Measurement Options";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(250, 17);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(109, 13);
+            this.label5.TabIndex = 20;
+            this.label5.Text = "Identifier for this Scan";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtBoxLabel
+            // 
+            this.txtBoxLabel.Location = new System.Drawing.Point(123, 17);
+            this.txtBoxLabel.Name = "txtBoxLabel";
+            this.txtBoxLabel.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxLabel.TabIndex = 21;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(8, 16);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(61, 13);
+            this.label6.TabIndex = 19;
+            this.label6.Text = "Scan Label";
             // 
             // lblGHz
             // 
@@ -433,8 +460,7 @@
             // 
             // tabOperation
             // 
-            this.tabOperation.Controls.Add(this.button1);
-            this.tabOperation.Controls.Add(this.btnVNACapture);
+            this.tabOperation.Controls.Add(this.groupBox3);
             this.tabOperation.Controls.Add(this.groupBox2);
             this.tabOperation.Controls.Add(this.groupBox1);
             this.tabOperation.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -445,26 +471,6 @@
             this.tabOperation.TabIndex = 1;
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(635, 60);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(121, 23);
-            this.button1.TabIndex = 21;
-            this.button1.Text = "Get Arm Position";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
-            // 
-            // btnVNACapture
-            // 
-            this.btnVNACapture.Location = new System.Drawing.Point(635, 31);
-            this.btnVNACapture.Name = "btnVNACapture";
-            this.btnVNACapture.Size = new System.Drawing.Size(121, 23);
-            this.btnVNACapture.TabIndex = 21;
-            this.btnVNACapture.Text = "VNA Capture";
-            this.btnVNACapture.UseVisualStyleBackColor = true;
-            this.btnVNACapture.Click += new System.EventHandler(this.btnVNACapture_Click);
             // 
             // groupBox2
             // 
@@ -612,31 +618,25 @@
             // 
             this.bwControlSystem.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwControlSystem_DoWork);
             // 
-            // label5
+            // groupBox3
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(250, 17);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(109, 13);
-            this.label5.TabIndex = 20;
-            this.label5.Text = "Identifier for this Scan";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.groupBox3.Controls.Add(this.lblScanStatus);
+            this.groupBox3.Location = new System.Drawing.Point(6, 194);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(390, 83);
+            this.groupBox3.TabIndex = 22;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Scan Status";
             // 
-            // txtBoxLabel
+            // lblScanStatus
             // 
-            this.txtBoxLabel.Location = new System.Drawing.Point(123, 17);
-            this.txtBoxLabel.Name = "txtBoxLabel";
-            this.txtBoxLabel.Size = new System.Drawing.Size(121, 20);
-            this.txtBoxLabel.TabIndex = 21;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 16);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(61, 13);
-            this.label6.TabIndex = 19;
-            this.label6.Text = "Scan Label";
+            this.lblScanStatus.AutoSize = true;
+            this.lblScanStatus.Location = new System.Drawing.Point(6, 18);
+            this.lblScanStatus.MaximumSize = new System.Drawing.Size(250, 100);
+            this.lblScanStatus.Name = "lblScanStatus";
+            this.lblScanStatus.Size = new System.Drawing.Size(108, 13);
+            this.lblScanStatus.TabIndex = 20;
+            this.lblScanStatus.Text = "Status: Not Scanning";
             // 
             // MainForm
             // 
@@ -668,6 +668,8 @@
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -722,11 +724,11 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnZeroMotors;
-        private System.Windows.Forms.Button btnVNACapture;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtBoxLabel;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Label lblScanStatus;
     }
 }
 

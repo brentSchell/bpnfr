@@ -21,7 +21,7 @@ namespace Gui
         VNAInterface vna;
 
         Worker control_system_worker, flag_worker;
-        Thread control_system_thread, flag_thread;
+        Thread control_system_thread, progress_thread;
         string gpib_conn_string = "GPIB0::9::INSTR";
 
         public MainForm()
@@ -269,11 +269,13 @@ namespace Gui
         private void btnRunSystem_Click(object sender, EventArgs e)
         {
             // Ensure we are ready to zero motors
+            // %% temp remove check
+            /*
             if (Globals.SYS_STATE != State.Zeroed)
             {
                 MessageBox.Show("A scan cannot be performed until motors are calibrated. Please calibrate the motors.");
                 return;
-            }
+            }*/
             
             // Ensure user wants to start
             
@@ -302,9 +304,17 @@ namespace Gui
                     return;
                 }
                 control_system_thread.Start();
-
+                
                 // Update state to scan running
                 Globals.SYS_STATE = State.Running;
+                
+                // Update status text box
+                DateTime now = DateTime.Now;
+                lblScanStatus.Text = "Status: Scanning\n";
+                lblScanStatus.Text += "Start Time: " + now.ToString("hh:mm") + "\n";
+                lblScanStatus.Text += "Estimated Duration: " + Globals.TIME_ESTIMATE_HRS + " hours\n";
+                lblScanStatus.Text += "Data File: " + Globals.FILENAME+ "\n";
+
             }
                     
         }
@@ -371,6 +381,7 @@ namespace Gui
 
             // Update system state
             Globals.SYS_STATE = State.Unconfigured;
+            update();
 
         }
 
@@ -496,7 +507,7 @@ namespace Gui
             // Ensure everything is connected
             update(); // update connection status
 
-            // temp
+            // %% remove temp
             /*
             if (Globals.SYS_STATE != State.Calculated) {
                  MessageBox.Show("Ensure all connections are made, and Measurement Options are applied before loading the motors and VNA.");
@@ -532,25 +543,50 @@ namespace Gui
             controller1.InitMotor(1);
             controller1.InitMotor(2);
             controller2.InitMotor(1);
+            bool result = false;
 
             // 2. Load required control sequences to motors
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
-                controller1.loadContinuousArmSweepOutwards(Globals.SEQ_SWEEP_ARM_OUTWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                controller1.loadContinuousArmSweepInwards(Globals.SEQ_SWEEP_ARM_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                //controller2.loadDiscreteAUTSequence(2, Globals.SWEEP_ANGLE, Globals.STEP_ANGLE);
+                result = controller1.loadContinuousArmSweepOutwards(Globals.SEQ_SWEEP_ARM_OUTWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                result = controller1.loadContinuousArmSweepInwards(Globals.SEQ_SWEEP_ARM_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                if (!result)
+                {
+                    MessageBox.Show("An error occurred loading control sequences to controller 1.\n" +
+                        "Please ensure controller 1 is connected and not currently running anything, then retry.");
+                    return;
+                }
+                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
+                if (!result)
+                {
+                    MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
+                        "Please ensure controller 2 is connected and not currently running anything, then retry.");
+                    return;
+                }
 
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                controller1.loadDiscreteArmSweepOutwards(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
-                controller1.loadDiscreteArmSweepInwards(Globals.SEQ_STEP_ARM_AND_RA_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
-                controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+                result = controller1.loadDiscreteArmSweepOutwards(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
+                result = controller1.loadDiscreteArmSweepInwards(Globals.SEQ_STEP_ARM_AND_RA_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
 
-                controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
-                controller2.loadDiscreteAUT360Inwards(Globals.SEQ_AUT_360);
+                if (!result)
+                {
+                    MessageBox.Show("An error occurred loading control sequences to controller 1.\n" +
+                        "Please ensure controller 1 is connected and not currently running anything, then retry.");
+                    return;
+                }
 
+                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
+                result = controller2.loadDiscreteAUT360Inwards(Globals.SEQ_AUT_360);
+                if (!result)
+                {
+                    MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
+                        "Please ensure controller 2 is connected and not currently running anything, then retry.");
+                    return;
+                }
             }
             else
             {
@@ -563,7 +599,7 @@ namespace Gui
 
             // Update system state, and finish
             Globals.SYS_STATE = State.Configured;
-            MessageBox.Show("Motors have been configured successfully.");
+            MessageBox.Show("Motors and VNA have been configured successfully.");
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -600,6 +636,12 @@ namespace Gui
                 // Update system state to zeroing in progress
                 // State will be updates in Worker function "runZeroAll" once it is complete
                 Globals.SYS_STATE = State.Zeroing;
+
+                // Update status text box
+                DateTime now = DateTime.Now;
+                lblScanStatus.Text = "Status: Calibrating\n";
+                lblScanStatus.Text += "Start Time: " + now.ToString("hh:mm") + "\n";
+                lblScanStatus.Text += "Estimated Duration: 5 minutes\n";
             }
         }
 
@@ -635,7 +677,7 @@ namespace Gui
             // Creates a unique filename based on the input label
             // If the label is blank, convention is "bpnfr_YYYY_MM_DD_SS"
             DateTime now = DateTime.Now;
-            string date_string = now.ToString("YYYY_MM_DD_SS");
+            string date_string = now.ToString("yyyy_MM_dd_hhmm");
             
             string filename;
             if (label == null || label == "")
@@ -649,5 +691,6 @@ namespace Gui
             return filename;
             
         }
+
     }
 }

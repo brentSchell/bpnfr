@@ -75,10 +75,11 @@ namespace Gui
             {
 
                 // Rotate AUT, collecting points along the same radius
-                for (double aut_deg = 0.0; !_shouldStop && aut_deg < Globals.SWEEP_ANGLE; aut_deg += Globals.STEP_ANGLE)
+                for (double aut_deg = 0.0; !_shouldStop && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
                 {
                     controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT);
 
+                    // Take 1st measurement
                     saveMeasurement(facingX);
                     
                     // Rotate RA 90 degrees to collect other point
@@ -93,11 +94,8 @@ namespace Gui
                     facingX = !facingX;
 
                     // Take 2nd measurement
-                    // double arm_pos1 = armEncoder.getPosition();
-                    // double measurement = vna.getMeasurement();
-                    // double arm_pos2 = armEncoder.getPosition();
-                    // double pos = arm_pos1 + arm_pos2 / 2.0;
-
+                    saveMeasurement(facingX);
+                    
                 }
                 
                 // Step arm out once
@@ -107,6 +105,18 @@ namespace Gui
                 controller2.runSequenceBlocking(Globals.SEQ_AUT_360);
 
             }
+
+            if (!_shouldStop)
+            {
+                // Change system state to scan completed, and return
+                Globals.SYS_STATE = State.Ran;
+            }
+            else
+            {
+                // If did not end successfully, change state back to "Configured" but not zeroed or ran
+                Globals.SYS_STATE = State.Configured; 
+            }
+            MessageBox.Show("Scan is completed.");
         }
 
         public void runDiscreteSystem()
@@ -233,14 +243,15 @@ namespace Gui
 
         private Measurement getMeasurement(bool is_x)
         {
-            
+            // %% temp remove encoders
+            /*
             double arm_pos1 = encoder.getPosition(1);
             double ra_pos1 = encoder.getPosition(2);
             double aut_pos1 = encoder.getPosition(3);
-
+            */
             // Get VNA measuremnt
             double[] e_field = vna.OutputFinalData(); // {real,imaginary}
-
+            /*
             double arm_pos2 = encoder.getPosition(1);
             double ra_pos2 = encoder.getPosition(2);
             double aut_pos2 = encoder.getPosition(3);
@@ -250,6 +261,8 @@ namespace Gui
             double ra_pos = (ra_pos1 + ra_pos2) / 2.0;
             double aut_pos = (aut_pos1 + aut_pos2) / 2.0;
             Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, is_x, e_field[0], e_field[1]);
+            */
+            Measurement m = new Measurement(0.0, 0.0, 0.0, is_x, e_field[0], e_field[1]);
 
             return m;
         }
