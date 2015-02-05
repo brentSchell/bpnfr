@@ -79,10 +79,8 @@ namespace Gui
                 {
                     controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT);
 
-                    //Measurement m = getMeasurement(facingX);
-                    //m.appendToFile("filename.txt");
-
-
+                    saveMeasurement(facingX);
+                    
                     // Rotate RA 90 degrees to collect other point
                     if (facingX)
                     {
@@ -226,6 +224,12 @@ namespace Gui
             }
             
         }
+        private void saveMeasurement(bool facingX)
+        {
+            Measurement m = getMeasurement(facingX);
+            m.appendToFile(Globals.FILENAME);
+
+        }
 
         private Measurement getMeasurement(bool is_x)
         {
@@ -234,16 +238,19 @@ namespace Gui
             double ra_pos1 = encoder.getPosition(2);
             double aut_pos1 = encoder.getPosition(3);
 
-            double[] e_field = vna.OutputFinalData();
+            // Get VNA measuremnt
+            double[] e_field = vna.OutputFinalData(); // {real,imaginary}
 
             double arm_pos2 = encoder.getPosition(1);
             double ra_pos2 = encoder.getPosition(2);
             double aut_pos2 = encoder.getPosition(3);
 
-            // get transformation from angles to [x,y]
-            double x = 0.0;
-            double y = 0.0;
-            Measurement m = new Measurement(x, y, 10.0, is_x, e_field[0], e_field[1]);
+            // Average measurements
+            double arm_pos = (arm_pos1 + arm_pos2) / 2.0;
+            double ra_pos = (ra_pos1 + ra_pos2) / 2.0;
+            double aut_pos = (aut_pos1 + aut_pos2) / 2.0;
+            Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, is_x, e_field[0], e_field[1]);
+
             return m;
         }
 

@@ -6,40 +6,22 @@ using System.Threading.Tasks;
 
 namespace Gui
 {
-
-    public struct Reading {
-        public double[] pos;
-        public double[] ex ;
-        public double[] ey ;
-    }
-
-    public class Measurement{
-        private double x, y, z, re, im;
-        private bool is_x;
-        public Measurement(double x, double y, double z, bool is_x, double re, double im)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.is_x = is_x;
-            this.re = re;
-            this.im = im;
-        }
-
-        public void appendToFile(string filename) {
-            // TODO 
-            // Write readings to file
-        }
-    }
     // System state enumeration
     public enum State
     {
-        Configuring = 1,
+        // Config States
+        Unconfigured = 1,
+        Connected,
+        Calculated,
         Configured,
+
+        // Operation States
         Zeroing,
         Zeroed,
         Running,
         Ran,
+
+        // Results States
         PostProcessing,
         DisplayingResults
     };
@@ -47,11 +29,11 @@ namespace Gui
 
     public static class Globals
     {
-        public static List<Reading> all_readings;
         public static String SERIAL_LOG_FILE = "serial.log";
         public static bool LOGGING = true;
+        public static string FILENAME;
 
-        // Flag variables for GUI Indicators
+        // Connection Flags
         public static bool FLAG_CONT1_CONNECTED = false;
         public static bool FLAG_CONT2_CONNECTED = false;
         public static bool FLAG_ENCODER_CONNECTED = false;
@@ -70,9 +52,9 @@ namespace Gui
         public static double STEP_ANGLE = 0.0;
         public static double SCAN_AREA_RADIUS = 0.0;
         public static int MEASUREMENT_MODE = 0;
-        public static bool CONFIGURATION_READY = false; // i.e. motor controllers are ready to receive data
-        public static bool MOTORS_READY = false; // i.e. motors have received control sequences, ready to run.
         public static double FREQUENCY = 0.0; //GHz
+        public static double TIME_ESTIMATE_HRS = 0.0;
+        public static string LABEL;
 
         // Sequence Number ID's
         public static int SEQ_SWEEP_ARM_OUTWARD = 1;
@@ -92,7 +74,7 @@ namespace Gui
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
         public static double FAST_ACCEL = 100; // 0.5 = FASTEST, 1000 = SLOWEST
 
-        
+        // System state
         public static State SYS_STATE;
 
             
