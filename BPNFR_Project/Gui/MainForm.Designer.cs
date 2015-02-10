@@ -64,6 +64,8 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.lblScanStatus = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.btnRunSystem = new System.Windows.Forms.Button();
@@ -78,8 +80,6 @@
             this.btnEStop = new System.Windows.Forms.Button();
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lblScanStatus = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -87,9 +87,9 @@
             this.grpBoxMeasurementOptions.SuspendLayout();
             this.grpBoxSerialConnections.SuspendLayout();
             this.tabOperation.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblEncoderPositions
@@ -472,6 +472,26 @@
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.lblScanStatus);
+            this.groupBox3.Location = new System.Drawing.Point(6, 194);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(390, 83);
+            this.groupBox3.TabIndex = 22;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Scan Status";
+            // 
+            // lblScanStatus
+            // 
+            this.lblScanStatus.AutoSize = true;
+            this.lblScanStatus.Location = new System.Drawing.Point(6, 18);
+            this.lblScanStatus.MaximumSize = new System.Drawing.Size(250, 100);
+            this.lblScanStatus.Name = "lblScanStatus";
+            this.lblScanStatus.Size = new System.Drawing.Size(108, 13);
+            this.lblScanStatus.TabIndex = 20;
+            this.lblScanStatus.Text = "Status: Not Scanning";
+            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label3);
@@ -616,27 +636,11 @@
             // 
             // bwControlSystem
             // 
+            this.bwControlSystem.WorkerReportsProgress = true;
+            this.bwControlSystem.WorkerSupportsCancellation = true;
             this.bwControlSystem.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwControlSystem_DoWork);
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.lblScanStatus);
-            this.groupBox3.Location = new System.Drawing.Point(6, 194);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(390, 83);
-            this.groupBox3.TabIndex = 22;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Scan Status";
-            // 
-            // lblScanStatus
-            // 
-            this.lblScanStatus.AutoSize = true;
-            this.lblScanStatus.Location = new System.Drawing.Point(6, 18);
-            this.lblScanStatus.MaximumSize = new System.Drawing.Size(250, 100);
-            this.lblScanStatus.Name = "lblScanStatus";
-            this.lblScanStatus.Size = new System.Drawing.Size(108, 13);
-            this.lblScanStatus.TabIndex = 20;
-            this.lblScanStatus.Text = "Status: Not Scanning";
+            this.bwControlSystem.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwControlSystem_ProgressChanged);
+            this.bwControlSystem.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwControlSystem_RunWorkerCompleted);
             // 
             // MainForm
             // 
@@ -664,12 +668,12 @@
             this.grpBoxSerialConnections.ResumeLayout(false);
             this.grpBoxSerialConnections.PerformLayout();
             this.tabOperation.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

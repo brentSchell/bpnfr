@@ -9,7 +9,7 @@ namespace Gui
     // System state enumeration
     public enum State
     {
-        // Config States
+        // Configuration States
         Unconfigured = 1,
         Connected,
         Calculated,
@@ -63,8 +63,9 @@ namespace Gui
         public static int SEQ_STEP_ARM_AND_RA_INWARD = 4;
         public static int SEQ_TURN_RA_90_OUTWARD = 5;
         public static int SEQ_TURN_RA_90_INWARD = 6;
-        public static int SEQ_STEP_AUT = 7;
-        public static int SEQ_AUT_360 = 8;
+        public static int SEQ_STEP_AUT_INWARD = 7;
+        public static int SEQ_STEP_AUT_OUTWARD = 8;
+        public static int SEQ_AUT_360 = 9;
 
         // Motor default speeds
         public static double VEL = 500;
@@ -81,3 +82,26 @@ namespace Gui
     }
 
 }
+/*
+interface IMotorController
+{ 
+	bool InitMotor(int id);
+	bool SetSpeed(int motor_id, double speed, double start_speed, double accel);
+    bool IncMotor(int motor_id, double degree, bool blocking);
+    bool runSequence(int seq_num);
+    bool runSequenceBlocking(int seq_num);
+    void waitForIdle();
+    public bool EStop();
+ 	
+	// Available sequence programs interface
+    bool loadRATurn90Outwards(int seq_id);
+    bool loadRATurn90Inwards(int seq_id);
+    bool loadDiscreteArmSweepOutwards(int seq_id, double delta_angle, double sweep_angle);
+    bool loadDiscreteArmSweepInwards(int seq_id, double delta_angle, double sweep_angle);
+    bool loadContinuousArmSweepOutwards(int seq_id, double step_angle, double sweep_angle);
+    bool loadContinuousArmSweepInwards(int seq_id, double step_angle, double sweep_angle);
+    bool loadDiscreteAUTStepOutwards(int seq_id, double step_angle);
+    bool loadDiscreteAUTStepInwards(int seq_id, double step_angle);
+    bool loadDiscreteAUT360Inwards(int seq_id);
+}
+*/

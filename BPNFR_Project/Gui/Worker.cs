@@ -64,43 +64,110 @@ namespace Gui
             }
         }
 
+        public void runDiscreteSystem3()
+        {
+            /* 
+             * Discrete Mode AUT rotates 360 degrees Ex, back 360 Ey, then arm steps
+             */
+            bool facingX = true;
+            double ra_deg = 0.0;
+            // temp 10
+            for (double arm_deg = 10.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            {
+
+                // Rotate AUT Outwards, collecting points along the same radius for Ex
+                for (double aut_deg = 0.0; !_shouldStop && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+                {
+                    // Take measurement
+                    saveMeasurement(arm_deg, ra_deg, facingX);
+
+                    // Move AUT (blocking)
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+                }
+
+                // Rotate RA to collect other polarity
+                if (facingX)
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    ra_deg += 90.0;
+                }
+                else
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    ra_deg -= 90.0;
+                }
+                facingX = !facingX;
+
+                // Rotate AUT Inwards, collecting points along the same radius for Ey
+                for (double aut_deg = 360.0; !_shouldStop && aut_deg > 0.0; aut_deg -= Globals.STEP_ANGLE)
+                {
+
+                    // Take measurement
+                    saveMeasurement(arm_deg, ra_deg, facingX);
+
+                    // Move AUT (blocking)
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_INWARD);
+                }
+
+                // Step arm out once
+                controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);  
+            }
+
+            if (!_shouldStop)
+            {
+                // Change system state to scan completed, and return
+                Globals.SYS_STATE = State.Ran;
+            }
+            else
+            {
+                // If did not end successfully, change state back to "Configured" but not zeroed or ran
+                Globals.SYS_STATE = State.Configured;
+            }
+            MessageBox.Show("Scan is completed.");
+        }
+    
         public void runDiscreteSystem2()
         {
             /* 
              * Discrete Mode AUT rotates 360 degrees (back and forth), then arm steps
              */
             bool facingX = true;
-
+            double ra_deg = 0.0;
             for (double arm_deg = 0.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
 
                 // Rotate AUT, collecting points along the same radius
                 for (double aut_deg = 0.0; !_shouldStop && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
                 {
-                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT);
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
 
                     // Take 1st measurement
-                    saveMeasurement(facingX);
+                    saveMeasurement(arm_deg,ra_deg,facingX);
                     
                     // Rotate RA 90 degrees to collect other point
                     if (facingX)
                     {
                         controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                        ra_deg += 90.0;
                     }
                     else
                     {
                         controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                        ra_deg -= 90.0;
+
                     }
                     facingX = !facingX;
 
+
                     // Take 2nd measurement
-                    saveMeasurement(facingX);
+                    saveMeasurement(arm_deg,ra_deg,facingX);
                     
                 }
                 
                 // Step arm out once
                 controller1.runSequence(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);
-                
+                ra_deg += Globals.STEP_ANGLE;
+
                 // Spin AUT back 360 degrees (blocking)
                 controller2.runSequenceBlocking(Globals.SEQ_AUT_360);
 
@@ -234,35 +301,38 @@ namespace Gui
             }
             
         }
-        private void saveMeasurement(bool facingX)
+        private void saveMeasurement(double arm, double ra, bool facingX)
         {
-            Measurement m = getMeasurement(facingX);
+            Measurement m = getMeasurement(arm, ra, facingX);
             m.appendToFile(Globals.FILENAME);
 
         }
 
-        private Measurement getMeasurement(bool is_x)
+        private Measurement getMeasurement(double arm, double ra, bool is_x)
         {
             // %% temp remove encoders
             /*
             double arm_pos1 = encoder.getPosition(1);
             double ra_pos1 = encoder.getPosition(2);
-            double aut_pos1 = encoder.getPosition(3);
             */
+            double aut_pos1 = encoder.getPosition(1); // temp 1
+            
             // Get VNA measuremnt
             double[] e_field = vna.OutputFinalData(); // {real,imaginary}
             /*
             double arm_pos2 = encoder.getPosition(1);
             double ra_pos2 = encoder.getPosition(2);
-            double aut_pos2 = encoder.getPosition(3);
-
+            */
+            double aut_pos2 = encoder.getPosition(1); // temp 1
+            /*
             // Average measurements
             double arm_pos = (arm_pos1 + arm_pos2) / 2.0;
             double ra_pos = (ra_pos1 + ra_pos2) / 2.0;
-            double aut_pos = (aut_pos1 + aut_pos2) / 2.0;
-            Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, is_x, e_field[0], e_field[1]);
             */
-            Measurement m = new Measurement(0.0, 0.0, 0.0, is_x, e_field[0], e_field[1]);
+            double aut_pos = (aut_pos1 + aut_pos2) / 2.0;
+            //Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, is_x, e_field[0], e_field[1]);
+            
+            Measurement m = new Measurement(arm, ra, aut_pos, is_x, e_field[0], e_field[1]);
 
             return m;
         }

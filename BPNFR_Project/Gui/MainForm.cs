@@ -295,7 +295,7 @@ namespace Gui
                 }
                 else if (Globals.MEASUREMENT_MODE == 2) // Discrete
                 {
-                    control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
+                    control_system_thread = new Thread(control_system_worker.runDiscreteSystem3); // Discrete system 2 (AUT does majority of moving)
                 }
                 else
                 {
@@ -506,14 +506,11 @@ namespace Gui
 
             // Ensure everything is connected
             update(); // update connection status
-
-            // %% remove temp
-            /*
+            
             if (Globals.SYS_STATE != State.Calculated) {
                  MessageBox.Show("Ensure all connections are made, and Measurement Options are applied before loading the motors and VNA.");
                  return;
             }
-             */
 
             // Ensure user wants to load motors
             DialogResult res = MessageBox.Show("This process will take about a minute.\n" + 
@@ -556,7 +553,7 @@ namespace Gui
                         "Please ensure controller 1 is connected and not currently running anything, then retry.");
                     return;
                 }
-                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
+                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT_OUTWARD, Globals.STEP_ANGLE);
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
@@ -579,7 +576,8 @@ namespace Gui
                     return;
                 }
 
-                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT, Globals.STEP_ANGLE);
+                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT_OUTWARD, Globals.STEP_ANGLE);
+                result = controller2.loadDiscreteAUTStepInwards(Globals.SEQ_STEP_AUT_INWARD, Globals.STEP_ANGLE);
                 result = controller2.loadDiscreteAUT360Inwards(Globals.SEQ_AUT_360);
                 if (!result)
                 {
@@ -690,6 +688,16 @@ namespace Gui
             }
             return filename;
             
+        }
+
+        private void bwControlSystem_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void bwControlSystem_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
         }
 
     }

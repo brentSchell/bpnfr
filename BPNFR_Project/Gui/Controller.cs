@@ -27,7 +27,7 @@ namespace Gui
         string log_path;
         int id;
         // Inputs:  controller_port is the pre-initialized,  and OPENED serial port of the controller, which interfaces with up to 2 motors.
-        public Controller(int id, SerialPort controller_port,int motor_count)
+        public Controller(int id, SerialPort controller_port, int motor_count)
         {
             this.id = id;
             this.controller_port = controller_port;
@@ -511,7 +511,6 @@ namespace Gui
             return SendSequence(seq, seq_id);
         }
 
-        // %% TODO Generate and send AUT sequence
         public bool loadDiscreteAUTStepOutwards(int seq_id, double step_angle)
         {
             string seq = "Seq " + seq_id + "\r";
@@ -528,6 +527,22 @@ namespace Gui
             return SendSequence(seq, seq_id);
         }
 
+        public bool loadDiscreteAUTStepInwards(int seq_id, double step_angle)
+        {
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 - \r";                               // Outward %%                
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "INC1";
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+        // Available sequence programs interface
         public bool loadDiscreteAUT360Inwards(int seq_id)
         {
             string seq = "Seq " + seq_id + "\r";
