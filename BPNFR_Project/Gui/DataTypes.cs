@@ -69,9 +69,11 @@ namespace Gui
 
         // Motor default speeds
         public static double VEL = 500;
-        public static double START_VEL = 10;
         public static double FAST_VEL = 5000;
+
+        public static double START_VEL = 10;       
         public static double FAST_START_VEL = 500;
+
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
         public static double FAST_ACCEL = 100; // 0.5 = FASTEST, 1000 = SLOWEST
 

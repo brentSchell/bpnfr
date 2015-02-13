@@ -67,12 +67,14 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblScanStatus = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnStopScan = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.btnRunSystem = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnZeroMotors = new System.Windows.Forms.Button();
             this.tabResults = new System.Windows.Forms.TabPage();
+            this.btnStartMatlab = new System.Windows.Forms.Button();
             this.indicatorCont1Connection = new System.Windows.Forms.Button();
             this.indicatorCont2Connection = new System.Windows.Forms.Button();
             this.indicatorEncoderConnection = new System.Windows.Forms.Button();
@@ -80,6 +82,8 @@
             this.btnEStop = new System.Windows.Forms.Button();
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
+            this.bwMatlab = new System.ComponentModel.BackgroundWorker();
+            this.pbScan = new System.Windows.Forms.ProgressBar();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -90,6 +94,7 @@
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.tabResults.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblEncoderPositions
@@ -460,6 +465,7 @@
             // 
             // tabOperation
             // 
+            this.tabOperation.Controls.Add(this.pbScan);
             this.tabOperation.Controls.Add(this.groupBox3);
             this.tabOperation.Controls.Add(this.groupBox2);
             this.tabOperation.Controls.Add(this.groupBox1);
@@ -475,9 +481,9 @@
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.lblScanStatus);
-            this.groupBox3.Location = new System.Drawing.Point(6, 194);
+            this.groupBox3.Location = new System.Drawing.Point(400, 10);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(390, 83);
+            this.groupBox3.Size = new System.Drawing.Size(390, 334);
             this.groupBox3.TabIndex = 22;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Scan Status";
@@ -494,14 +500,25 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.btnStopScan);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.btnRunSystem);
             this.groupBox2.Location = new System.Drawing.Point(6, 105);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(390, 83);
+            this.groupBox2.Size = new System.Drawing.Size(390, 114);
             this.groupBox2.TabIndex = 21;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Run Scan";
+            // 
+            // btnStopScan
+            // 
+            this.btnStopScan.Location = new System.Drawing.Point(263, 82);
+            this.btnStopScan.Name = "btnStopScan";
+            this.btnStopScan.Size = new System.Drawing.Size(121, 23);
+            this.btnStopScan.TabIndex = 21;
+            this.btnStopScan.Text = "Stop";
+            this.btnStopScan.UseVisualStyleBackColor = true;
+            this.btnStopScan.Click += new System.EventHandler(this.btnStopScan_Click);
             // 
             // label3
             // 
@@ -557,12 +574,23 @@
             // 
             // tabResults
             // 
+            this.tabResults.Controls.Add(this.btnStartMatlab);
             this.tabResults.Location = new System.Drawing.Point(4, 22);
             this.tabResults.Name = "tabResults";
             this.tabResults.Size = new System.Drawing.Size(796, 350);
             this.tabResults.TabIndex = 2;
             this.tabResults.Text = "Results";
             this.tabResults.UseVisualStyleBackColor = true;
+            // 
+            // btnStartMatlab
+            // 
+            this.btnStartMatlab.Location = new System.Drawing.Point(41, 56);
+            this.btnStartMatlab.Name = "btnStartMatlab";
+            this.btnStartMatlab.Size = new System.Drawing.Size(146, 23);
+            this.btnStartMatlab.TabIndex = 0;
+            this.btnStartMatlab.Text = "Calculate Near-Field";
+            this.btnStartMatlab.UseVisualStyleBackColor = true;
+            this.btnStartMatlab.Click += new System.EventHandler(this.btnStartMatlab_Click);
             // 
             // indicatorCont1Connection
             // 
@@ -642,6 +670,20 @@
             this.bwControlSystem.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwControlSystem_ProgressChanged);
             this.bwControlSystem.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwControlSystem_RunWorkerCompleted);
             // 
+            // bwMatlab
+            // 
+            this.bwMatlab.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwMatlab_DoWork);
+            this.bwMatlab.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwMatlab_ProgressChanged);
+            this.bwMatlab.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwMatlab_RunWorkerCompleted);
+            // 
+            // pbScan
+            // 
+            this.pbScan.Location = new System.Drawing.Point(6, 225);
+            this.pbScan.Name = "pbScan";
+            this.pbScan.Size = new System.Drawing.Size(390, 23);
+            this.pbScan.TabIndex = 23;
+            this.pbScan.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -674,6 +716,7 @@
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.tabResults.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -733,6 +776,10 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label lblScanStatus;
+        private System.Windows.Forms.Button btnStopScan;
+        private System.Windows.Forms.Button btnStartMatlab;
+        private System.ComponentModel.BackgroundWorker bwMatlab;
+        private System.Windows.Forms.ProgressBar pbScan;
     }
 }
 

@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
 using VNA;
+using System.IO;
+using System.Diagnostics;
 
 namespace Gui
 {
@@ -287,24 +289,15 @@ namespace Gui
             if (res == DialogResult.Yes) 
             {
                 // Run control system asynchronously
-                control_system_worker = new Worker(controller1, controller2, encoder, vna);
+                control_system_worker = new Worker(controller1, controller2, encoder, vna, bwControlSystem);
 
-                if (Globals.MEASUREMENT_MODE == 1) // Continuous
-                {
-                    control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
-                }
-                else if (Globals.MEASUREMENT_MODE == 2) // Discrete
-                {
-                    control_system_thread = new Thread(control_system_worker.runDiscreteSystem3); // Discrete system 2 (AUT does majority of moving)
-                }
-                else
+                if (Globals.MEASUREMENT_MODE != 1 && Globals.MEASUREMENT_MODE != 2)
                 {
                     MessageBox.Show("Unable to start scan, measurement options are not configured properly.");
                     Globals.SYS_STATE = State.Unconfigured;
                     return;
                 }
-                control_system_thread.Start();
-                
+              
                 // Update state to scan running
                 Globals.SYS_STATE = State.Running;
                 
@@ -313,8 +306,17 @@ namespace Gui
                 lblScanStatus.Text = "Status: Scanning\n";
                 lblScanStatus.Text += "Start Time: " + now.ToString("hh:mm") + "\n";
                 lblScanStatus.Text += "Estimated Duration: " + Globals.TIME_ESTIMATE_HRS + " hours\n";
+                lblScanStatus.Text += "Percentage Complete: " + 0 + " %\n";
                 lblScanStatus.Text += "Data File: " + Globals.FILENAME+ "\n";
 
+                // Start background worker thread
+                if (!bwControlSystem.IsBusy)
+                {
+                    pbScan.Visible = true;
+                    pbScan.Value = 0;
+                    bwControlSystem.RunWorkerAsync();
+                }
+                //control_system_thread.Start();
             }
                     
         }
@@ -614,11 +616,13 @@ namespace Gui
         private void btnZeroMotors_Click(object sender, EventArgs e)
         {
             // Ensure we are ready to zero motors
+            /*
             if (Globals.SYS_STATE != State.Configured)
             {
                 MessageBox.Show("The system is not configured properly or is currently running, and cannot be zeroed.");
                 return;
             }
+            */
 
             // Ensure user wants to start
             DialogResult res = MessageBox.Show("This process will take about 5 minutes.\n" +
@@ -627,13 +631,11 @@ namespace Gui
             if (res == DialogResult.Yes)
             {
                 // Zero 3 motors asynchronously
-                control_system_worker = new Worker(controller1, controller2, encoder, vna);
-                control_system_thread = new Thread(control_system_worker.runZeroAll);
-                control_system_thread.Start();
-
                 // Update system state to zeroing in progress
                 // State will be updates in Worker function "runZeroAll" once it is complete
                 Globals.SYS_STATE = State.Zeroing;
+
+                bwControlSystem.RunWorkerAsync();
 
                 // Update status text box
                 DateTime now = DateTime.Now;
@@ -656,7 +658,318 @@ namespace Gui
 
         private void bwControlSystem_DoWork(object sender, DoWorkEventArgs e)
         {
+            if (Globals.SYS_STATE == State.Zeroing) // Zero System
+            {
+                runZeroMotor(1, 1, 0.0);    // arm
+                runZeroMotor(1, 2, 0.0);    // ra
+               // runZeroMotor(2, 1, 0.0);  // aut
+            }
+            else if (Globals.MEASUREMENT_MODE == 1) // Continuous
+            {
+                runContinuousSystem();
+                control_system_worker.runContinuousSystem();
+                //control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
+            }
+            else if (Globals.MEASUREMENT_MODE == 2) // Discrete
+            {
+               // runDiscreteSystem3();
+                runDiscreteSystem4();
 
+                //control_system_thread = new Thread(control_system_worker.runDiscreteSystem3); // Discrete system 2 (AUT does majority of moving)
+            }
+
+            MessageBox.Show("Scan is completed.");
+
+        }
+
+
+        // --------------------------------------------------
+        // Measurement Systems
+        // -------------------------------------------------
+        public void runContinuousSystem()
+        {
+            /* Worker thread method to perform the discrete control system
+             * Uses system parameters stored in "Globals" for the step and sweep angles  
+             */
+            bool facingX = true;
+            double arm_deg = 0.0;
+            double ra_deg = 0.0;
+            for (double aut_deg = 0.0; !bwControlSystem.CancellationPending && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+            {
+                // Take measurements at the stopped point
+                for (int i = 0; i < 5; i++)
+                {
+                    arm_deg = encoder.getPosition(1) - 353.4082; ;
+                    ra_deg = encoder.getPosition(2) - 240.5566; ;
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+                    Thread.Sleep(500);
+                }
+
+                // Sweep outwards
+                controller1.runSequence(Globals.SEQ_SWEEP_ARM_OUTWARD); // Note: Non-Blocking sequence run
+
+
+                // Take measurements as we go (same as above)
+                for (int i = 0; i < 80; i++)
+                {
+                    arm_deg = encoder.getPosition(1) - 353.4082;
+                    ra_deg = encoder.getPosition(2) - 240.5566;
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+                    Thread.Sleep(500);
+                }
+
+                    controller1.waitForIdle();
+
+                // Rotate RA 90 degrees
+                if (facingX)
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                }
+                else
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                }
+                facingX = !facingX;
+
+
+                // Take measurements at the stopped point
+                for (int i = 0; i < 5; i++)
+                {
+                    arm_deg = encoder.getPosition(1) - 353.4082; ;
+                    ra_deg = encoder.getPosition(2) - 240.5566; ;
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+                    Thread.Sleep(500);
+                }
+
+
+                // Sweep back inwards
+                controller1.runSequence(Globals.SEQ_SWEEP_ARM_INWARD); // Note: Non-Blocking sequence run
+
+                // Take measurements as we go (same as above)
+                for (int i = 0; i < 80; i++)
+                {
+                    arm_deg = encoder.getPosition(1) - 353.4082; ;
+                    ra_deg = encoder.getPosition(2) - 240.5566; ;
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+                    Thread.Sleep(500);
+                }
+                controller1.waitForIdle();
+                // Step AUT once, then repeat
+                controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+
+            }
+
+        }
+        private void runDiscreteSystem3()
+        {
+            /* 
+             * Discrete Mode AUT rotates 360 degrees Ex, back 360 Ey, then arm steps
+             */
+            bool facingX = true;
+            double ra_deg = 0.0;
+            // temp 10
+
+            for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            {
+                
+                // Rotate AUT Outwards, collecting points along the same radius for Ex
+                for (double aut_deg = 0.0; !bwControlSystem.CancellationPending && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+                {
+                    
+                    // Take measurement
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+
+                    // Move AUT (blocking)
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+                    
+                }
+
+                // Rotate RA to collect other polarity
+                if (facingX)
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    ra_deg += 90.0;
+                }
+                else
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    ra_deg -= 90.0;
+                }
+                facingX = !facingX;
+
+                // Rotate AUT Inwards, collecting points along the same radius for Ey
+                for (double aut_deg = 360.0; !bwControlSystem.CancellationPending && aut_deg > 0.0; aut_deg -= Globals.STEP_ANGLE)
+                {
+
+                    // Take measurement
+                    saveMeasurement(arm_deg, ra_deg, aut_deg,facingX);
+
+                    // Move AUT (blocking)
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_INWARD);
+                }
+
+                // Step arm out once
+                controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);  
+            
+                // temp
+                Thread.Sleep(5000);
+
+                bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
+            }
+
+            if (!!bwControlSystem.CancellationPending)
+            {
+                bwControlSystem.ReportProgress(100);
+            }
+            else
+            {
+                MessageBox.Show("The scan has been prematurely terminated.");
+            }
+        }
+
+        private void runDiscreteSystem4()
+        {
+            /* 
+             * Discrete Mode AUT rotates 360 degrees Ex, back 360 Ey, then arm steps
+             * Modified to feign data
+             */
+            bool facingX = true;
+            double ra_deg = 0.0;
+            double[] re_im;
+            // temp 10
+
+            for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            {
+                // Take measurement
+                re_im = vna.OutputFinalData();
+                //saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+
+                // Rotate AUT Outwards, collecting points along the same radius for Ex
+                for (double aut_deg = 0.0; !bwControlSystem.CancellationPending && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+                {
+
+                    // Take measurement
+                    saveReading(arm_deg, ra_deg, aut_deg, facingX, re_im[0],re_im[1]);
+
+                    // Move AUT (blocking)
+                    //controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+
+                }
+
+                // Rotate RA to collect other polarity
+                if (facingX)
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    ra_deg += 90.0;
+                }
+                else
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    ra_deg -= 90.0;
+                }
+                facingX = !facingX;
+
+                re_im = vna.OutputFinalData();
+
+                // Rotate AUT Inwards, collecting points along the same radius for Ey
+                for (double aut_deg = 360.0; !bwControlSystem.CancellationPending && aut_deg > 0.0; aut_deg -= Globals.STEP_ANGLE)
+                {
+
+                    // Take measurement
+                    saveReading(arm_deg, ra_deg, aut_deg, facingX,re_im[0], re_im[1]);
+
+                    // Move AUT (blocking)
+                    //controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_INWARD);
+                }
+
+                // Step arm out once
+                controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);
+
+                // Add Settling time
+                //Thread.Sleep(5000);
+
+                bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
+            }
+
+            if (!!bwControlSystem.CancellationPending)
+            {
+                bwControlSystem.ReportProgress(100);
+            }
+            else
+            {
+                MessageBox.Show("The scan has been prematurely terminated.");
+            }
+        }
+
+        private void runZeroMotor(int controller_id, int motor_id, double home_angle)
+        {
+            int encoder_id = 0;
+            Controller c;
+            if (controller_id == 1)
+            {
+                c = controller1;
+                if (motor_id == 1)
+                {
+                    encoder_id = 1;
+                }
+                else if (motor_id == 2)
+                {
+                    encoder_id = 2;
+                }
+            }
+            else
+            {
+                c = controller2;
+                encoder_id = 3;
+            }
+            // Configure motor speed (Arm motor needs to be slow, others can be fast)
+            double v, vs, t;
+            if (controller_id == 1 && motor_id == 1)
+            {
+                // Set arm motor speed/accel to the slow defaults
+                v = Globals.VEL;
+                vs = Globals.START_VEL;
+                t = Globals.ACCEL;
+            }
+            else
+            {
+                // Set aut or ra speed/accel to the fast defaults
+                v = Globals.FAST_VEL;
+                vs = Globals.FAST_START_VEL;
+                t = Globals.FAST_ACCEL;
+            }
+            c.SetSpeed(motor_id, v, vs, t);
+
+            double current_pos = encoder.getPosition(motor_id);
+            home_angle = 0.0;
+
+            while (!bwControlSystem.CancellationPending && Math.Abs(current_pos - home_angle) > Globals.ANGLE_ERROR_MAX)
+            {
+                double inc_amount = Math.Round(current_pos - home_angle, 2);
+                if (inc_amount > 180.0)
+                {
+                    inc_amount -= 360.0;
+                }
+                // Move motor, blocks until the motor stops moving
+                c.IncMotor(motor_id, inc_amount, true);
+
+                // Get new motor position
+                current_pos = encoder.getPosition(motor_id);
+            }
+
+        }
+
+        private void saveMeasurement(double arm_deg, double ra_deg, double aut_deg, bool facingX)
+        {
+            double[] data = vna.OutputFinalData();
+            Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, data[0],data[1]);
+            m.appendToFile(Globals.FILENAME);
+        }
+        private void saveReading(double arm_deg, double ra_deg, double aut_deg, bool facingX, double re, double im)
+        {
+            double[] data = vna.OutputFinalData();
+            Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, re, im);
+            m.appendToFile(Globals.FILENAME);
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -692,12 +1005,73 @@ namespace Gui
 
         private void bwControlSystem_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            // Update status text box
+            DateTime now = DateTime.Now;
+            lblScanStatus.Text = "Status: Scanning\n";
+            lblScanStatus.Text += "Start Time: " + now.ToString("hh:mm") + "\n";
+            lblScanStatus.Text += "Estimated Duration: " + Globals.TIME_ESTIMATE_HRS + " hours\n";
+            lblScanStatus.Text += "Percentage Complete: " + e.ProgressPercentage + " %\n";
+            lblScanStatus.Text += "Data File: " + Globals.FILENAME + "\n";
 
+            // Update Progress Bar
+            pbScan.Value = e.ProgressPercentage;
         }
 
         private void bwControlSystem_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            // Hide Progress Bar
+            pbScan.Visible = false;
+            pbScan.Value = 0;
+        }
 
+        private void btnStopScan_Click(object sender, EventArgs e)
+        {
+            if (bwControlSystem.IsBusy)
+            {
+                bwControlSystem.CancelAsync();
+            }
+        }
+
+        private void btnStartMatlab_Click(object sender, EventArgs e)
+        {
+            // %% add state check
+            bwMatlab.RunWorkerAsync();
+        }
+
+
+        // Post processing
+        private void bwMatlab_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string matlab_exe = Directory.GetCurrentDirectory() + "\\MATLAB\\nf_ff_transformation.exe";
+            Start_MATLAB_Compiler_EXE(matlab_exe, "settings.txt", "first_test_data");
+
+        }
+
+        private void bwMatlab_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void bwMatlab_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+        }
+
+        static void Start_MATLAB_Compiler_EXE(string path_to_exe, string settings_file, string data_file)
+        {
+            Process p = new Process();
+            p.StartInfo.FileName = path_to_exe;
+            p.StartInfo.Arguments = "\"" + settings_file + "\" \"" + data_file + "\""; // surround files in quotes incase spaces
+            p.Start();  
+            p.WaitForExit();
+            /*
+            Form frm = new Form();
+            PictureBox pictBox = new PictureBox();
+            pictBox.ImageLocation = @"plot_ForExternal_v2.jpg";
+            pictBox.Dock = DockStyle.Fill;
+            frm.Controls.Add(pictBox);
+            Application.Run(frm);
+            */
         }
 
     }

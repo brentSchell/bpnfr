@@ -78,7 +78,7 @@ namespace Gui
             return response;
         }
 
-        public bool InitMotor(int id)
+        public bool InitMotor(int motor_id)
         {
             // Sets defaults
             string ACTL = " 0,0,0,0,1";
@@ -94,36 +94,36 @@ namespace Gui
             //resp = recv();
 
             // configure warning flags
-            command = "ACTL" + id + ACTL;
+            command = "ACTL" + motor_id + ACTL;
             send(command);
             resp = recv(">");
 
             // set motor units, so INC commands are in degrees.
-            command = "UNIT" + id + UNIT;
+            command = "UNIT" + motor_id + UNIT;
             send(command);
             resp = recv(">");
 
             // set motor acceleration rate %% to be modified
-            command = "RAMP" + id + RAMP; // 0 means linear acceleration, the 100 doesn't do anything
+            command = "RAMP" + motor_id + RAMP; // 0 means linear acceleration, the 100 doesn't do anything
             send(command);
             resp = recv(">");
 
             // set motor start speed. This will always be really slow (10) so motors don't jerk to start
             // Start Vel = VS*0.0036 degrees/pulse
-            command = "VS" + id + VS;
+            command = "VS" + motor_id + VS;
             send(command);
             resp = recv(">");
 
             // set motor default running speed
             // Vel = VS*0.0036 degrees/pulse
             // %% TO BE MODIFIED
-            command = "V" + id + V;
+            command = "V" + motor_id + V;
             send(command);
             resp = recv(">");
 
             // set motor default accel/decel rate
             // This is mainly used when you hit emergency stop
-            command = "T" + id + T;
+            command = "T" + motor_id + T;
             send(command);
             resp = recv(">");
 
@@ -516,10 +516,10 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 " + step_angle + "\r";               // set aut step angle
-            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
-            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "V1 " + Globals.FAST_VEL + "\r";      // set aut motor speed
+            seq += "VS1 " + Globals.FAST_START_VEL + "\r";
             seq += "H1 + \r";                               // Outward %%                
-            seq += "T1 " + Globals.ACCEL + "\r";
+            seq += "T1 " + Globals.FAST_ACCEL + "\r";
 
             seq += "INC1";
             seq += "\r\r";
@@ -532,10 +532,10 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 " + step_angle + "\r";               // set aut step angle
-            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
-            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.FAST_START_VEL + "\r";
             seq += "H1 - \r";                               // Outward %%                
-            seq += "T1 " + Globals.ACCEL + "\r";
+            seq += "T1 " + Globals.FAST_ACCEL + "\r";
 
             seq += "INC1";
             seq += "\r\r";

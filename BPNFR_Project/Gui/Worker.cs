@@ -20,7 +20,8 @@ namespace Gui
         Controller controller1, controller2;
         Encoder encoder;
         VNAInterface vna;
-        public Worker(Controller c1, Controller c2, Encoder e, VNAInterface vna)
+        BackgroundWorker bw;
+        public Worker(Controller c1, Controller c2, Encoder e, VNAInterface vna, BackgroundWorker bw)
         {
             this.controller1 = c1;
             this.controller2 = c2;
@@ -72,17 +73,19 @@ namespace Gui
             bool facingX = true;
             double ra_deg = 0.0;
             // temp 10
-            for (double arm_deg = 10.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            for (double arm_deg = 0.0; !_shouldStop && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
-
+                /*
                 // Rotate AUT Outwards, collecting points along the same radius for Ex
                 for (double aut_deg = 0.0; !_shouldStop && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
                 {
+                    
                     // Take measurement
                     saveMeasurement(arm_deg, ra_deg, facingX);
 
                     // Move AUT (blocking)
                     controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+                    
                 }
 
                 // Rotate RA to collect other polarity
@@ -111,6 +114,10 @@ namespace Gui
 
                 // Step arm out once
                 controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);  
+            */
+                // temp
+                Thread.Sleep(5000);
+                bw.ReportProgress( (int)(100.0*arm_deg/Globals.SWEEP_ANGLE) );
             }
 
             if (!_shouldStop)
@@ -123,7 +130,7 @@ namespace Gui
                 // If did not end successfully, change state back to "Configured" but not zeroed or ran
                 Globals.SYS_STATE = State.Configured;
             }
-            MessageBox.Show("Scan is completed.");
+             
         }
     
         public void runDiscreteSystem2()
