@@ -54,7 +54,7 @@ namespace Gui
         public static int MEASUREMENT_MODE = 0;
         public static double FREQUENCY = 0.0; //GHz
         public static double TIME_ESTIMATE_HRS = 0.0;
-        public static string LABEL;
+        public static string LABEL = "BPNFR"; // default scan label, can be changed by user
 
         // Sequence Number ID's
         public static int SEQ_SWEEP_ARM_OUTWARD = 1;
@@ -66,6 +66,15 @@ namespace Gui
         public static int SEQ_STEP_AUT_INWARD = 7;
         public static int SEQ_STEP_AUT_OUTWARD = 8;
         public static int SEQ_AUT_360 = 9;
+
+        public static int SEQ_RA_AUT_360_INWARD = 10;
+        public static int SEQ_RA_AUT_360_OUTWARD= 11;
+        public static int SEQ_STEP_ARM_OUTWARD = 12;
+        public static int SEQ_STEP_ARM_INWARD = 13;
+        public static int SEQ_STEP_RA_AUT_INWARD = 14;
+        public static int SEQ_STEP_RA_AUT_OUTWARD = 15;
+        public static int SEQ_STEP_RA_OUTWARD = 16;
+        public static int SEQ_STEP_RA_INWARD = 17;
 
         // Motor default speeds
         public static double VEL = 500;

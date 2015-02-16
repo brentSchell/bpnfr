@@ -25,6 +25,8 @@ namespace Gui
         Worker control_system_worker, flag_worker;
         Thread control_system_thread, progress_thread;
         string gpib_conn_string = "GPIB0::9::INSTR";
+        List<Image> images_list;
+        int image_index = 0;
 
         public MainForm()
         {
@@ -35,14 +37,18 @@ namespace Gui
             //flag_worker = new Worker();
             //flag_thread = new Thread(flag_worker.updateFlags);
             //flag_thread.Start();
-
+            
             // Set default measurement values in UI
             txtBoxCriticalAngle.Text = "45.0";
             txtBoxFrequency.Text = "5.00";
             cmbBoxMeasurementMode.SelectedIndex = 0; // Discrete mode default
+            cmbBoxFFPowerPhiCuts.SelectedIndex = 0; // True
+            cmbBoxNFPowerLinear.SelectedIndex = 0; // True
 
             // Init system state
             Globals.SYS_STATE = State.Unconfigured;
+            lblSysState.Text = "Unconfigured";
+
             
         }
 
@@ -175,6 +181,7 @@ namespace Gui
                 Globals.FLAG_VNA_CONNECTED && Globals.FLAG_CONT2_CONNECTED)
             {
                 Globals.SYS_STATE = State.Connected;
+                lblSysState.Text = "Connected";
             }
         }
 
@@ -253,10 +260,11 @@ namespace Gui
         private void btnEStop_Click(object sender, EventArgs e)
         {
             // Tell control system to stop
-            if (control_system_thread != null && control_system_worker != null)
+            if (bwControlSystem.IsBusy)
             {
-                control_system_worker.requestStop();
+                bwControlSystem.CancelAsync();
             }
+
             // Send [ESC] command to all controllers
             if (cont1_port != null && cont1_port.IsOpen)
             {
@@ -295,11 +303,14 @@ namespace Gui
                 {
                     MessageBox.Show("Unable to start scan, measurement options are not configured properly.");
                     Globals.SYS_STATE = State.Unconfigured;
+                    lblSysState.Text = "Unconfigured";
                     return;
                 }
               
                 // Update state to scan running
                 Globals.SYS_STATE = State.Running;
+                lblSysState.Text = "Running";
+
                 
                 // Update status text box
                 DateTime now = DateTime.Now;
@@ -383,6 +394,8 @@ namespace Gui
 
             // Update system state
             Globals.SYS_STATE = State.Unconfigured;
+            lblSysState.Text = "Unconfigured";
+
             update();
 
         }
@@ -408,8 +421,15 @@ namespace Gui
             bool has_error = false;
 
             // Set label for measurement
-            string scan_label_raw = txtBoxLabel.Text;           
-            scan_label_raw.Replace(" ", "_");
+            string scan_label_raw = txtBoxLabel.Text;
+            if (scan_label_raw == null || scan_label_raw == "")
+            {
+                scan_label_raw = "bpnfr";
+            }
+            else
+            {
+                scan_label_raw.Replace(" ", "_");
+            }
             Globals.LABEL = scan_label_raw;
             Globals.FILENAME = createUniqueFilename(Globals.LABEL);
 
@@ -483,8 +503,6 @@ namespace Gui
             Globals.FREQUENCY = Math.Round(frequency, 7);
             Globals.TIME_ESTIMATE_HRS = Math.Round(duration_estimate,2);
 
-            // %%% Add code to ensure parameters look right?
-
             // Output Results
             lblMeasurementSummary.Text = "\n";
             lblMeasurementSummary.Text += "\tScan Area Radius: " + Globals.SCAN_AREA_RADIUS + " meters\n";
@@ -494,6 +512,8 @@ namespace Gui
 
             // Update system state
             Globals.SYS_STATE = State.Calculated;
+            lblSysState.Text = "Calculated";
+
         }
 
         private void lblMeasurementSummary_Click(object sender, EventArgs e)
@@ -547,15 +567,21 @@ namespace Gui
             // 2. Load required control sequences to motors
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
-                result = controller1.loadContinuousArmSweepOutwards(Globals.SEQ_SWEEP_ARM_OUTWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                result = controller1.loadContinuousArmSweepInwards(Globals.SEQ_SWEEP_ARM_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
+                // Load all control sequences required for continuous mode
+                result = controller1.loadAUTRA360Inwards(Globals.SEQ_RA_AUT_360_INWARD);
+                result = controller1.loadAUTRA360Outwards(Globals.SEQ_RA_AUT_360_OUTWARD);
+                result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD, Globals.STEP_ANGLE);
+
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 1.\n" +
                         "Please ensure controller 1 is connected and not currently running anything, then retry.");
                     return;
                 }
-                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT_OUTWARD, Globals.STEP_ANGLE);
+
+                result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
@@ -566,10 +592,12 @@ namespace Gui
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                result = controller1.loadDiscreteArmSweepOutwards(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD,Globals.STEP_ANGLE,Globals.SWEEP_ANGLE);
-                result = controller1.loadDiscreteArmSweepInwards(Globals.SEQ_STEP_ARM_AND_RA_INWARD, Globals.STEP_ANGLE, Globals.SWEEP_ANGLE);
-                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                // Load all sequence programs used by discrete control system
+                result = controller1.loadStepAUTRAOutwards(Globals.SEQ_STEP_RA_AUT_OUTWARD, Globals.STEP_ANGLE);
                 result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+                result = controller1.loadStepAUTRAInwards(Globals.SEQ_STEP_RA_AUT_INWARD, Globals.STEP_ANGLE);
+                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD,Globals.STEP_ANGLE);
 
                 if (!result)
                 {
@@ -578,9 +606,7 @@ namespace Gui
                     return;
                 }
 
-                result = controller2.loadDiscreteAUTStepOutwards(Globals.SEQ_STEP_AUT_OUTWARD, Globals.STEP_ANGLE);
-                result = controller2.loadDiscreteAUTStepInwards(Globals.SEQ_STEP_AUT_INWARD, Globals.STEP_ANGLE);
-                result = controller2.loadDiscreteAUT360Inwards(Globals.SEQ_AUT_360);
+                result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
@@ -599,6 +625,8 @@ namespace Gui
 
             // Update system state, and finish
             Globals.SYS_STATE = State.Configured;
+            lblSysState.Text = "Configured";
+
             MessageBox.Show("Motors and VNA have been configured successfully.");
         }
 
@@ -634,6 +662,8 @@ namespace Gui
                 // Update system state to zeroing in progress
                 // State will be updates in Worker function "runZeroAll" once it is complete
                 Globals.SYS_STATE = State.Zeroing;
+                lblSysState.Text = "Calibrating";
+
 
                 bwControlSystem.RunWorkerAsync();
 
@@ -662,17 +692,16 @@ namespace Gui
             {
                 runZeroMotor(1, 1, 0.0);    // arm
                 runZeroMotor(1, 2, 0.0);    // ra
-               // runZeroMotor(2, 1, 0.0);  // aut
+                // res = runZeroMotor(2, 1, 0.0);  // aut
             }
             else if (Globals.MEASUREMENT_MODE == 1) // Continuous
             {
                 runContinuousSystem();
-                control_system_worker.runContinuousSystem();
                 //control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-               // runDiscreteSystem3();
+                // runDiscreteSystem3();
                 runDiscreteSystem4();
 
                 //control_system_thread = new Thread(control_system_worker.runDiscreteSystem3); // Discrete system 2 (AUT does majority of moving)
@@ -688,86 +717,89 @@ namespace Gui
         // -------------------------------------------------
         public void runContinuousSystem()
         {
-            /* Worker thread method to perform the discrete control system
+            /* 
+             * Worker thread method to perform the continuous control system
              * Uses system parameters stored in "Globals" for the step and sweep angles  
              */
             bool facingX = true;
-            double arm_deg = 0.0;
-            double ra_deg = 0.0;
-            for (double aut_deg = 0.0; !bwControlSystem.CancellationPending && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+            double aut_pos = 0.0;
+            double ra_pos = 0.0;
+            double arm_pos = 0.0;
+            for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
-                // Take measurements at the stopped point
-                for (int i = 0; i < 5; i++)
+                // rotate ARM and RA to measure Ex for all AUT radii
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
+
+                int iMeasurements = 0;
+                arm_pos = encoder.getPosition(1);
+                ra_pos = encoder.getPosition(2) - 240.5566;
+                while (iMeasurements < 360.0 / Globals.STEP_ANGLE)
                 {
-                    arm_deg = encoder.getPosition(1) - 353.4082; ;
-                    ra_deg = encoder.getPosition(2) - 240.5566; ;
-                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
-                    Thread.Sleep(500);
+                    if (ra_pos / Globals.STEP_ANGLE == iMeasurements)
+                    {
+                        double ra_pos1 = encoder.getPosition(2);
+                        double aut_pos1 = encoder.getPosition(3);
+                        double[] data = vna.OutputFinalData();
+                        ra_pos = (encoder.getPosition(2) - ra_pos1) / 2.0;
+                        aut_pos = (encoder.getPosition(3) - aut_pos1) / 2.0;
+                        saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                        iMeasurements++;
+                    }
                 }
 
-                // Sweep outwards
-                controller1.runSequence(Globals.SEQ_SWEEP_ARM_OUTWARD); // Note: Non-Blocking sequence run
+                controller1.waitForIdle();
 
+                // Turn RA to face Ey
+                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                facingX = false;
 
-                // Take measurements as we go (same as above)
-                for (int i = 0; i < 80; i++)
+                // Rotate AUT and RA back 360 degrees, measuring Ey
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
+                
+                double r = 360.0 / Globals.STEP_ANGLE;
+                iMeasurements = (int)Math.Ceiling(r);
+                arm_pos = encoder.getPosition(1);
+                ra_pos = encoder.getPosition(2) - 240.5566;
+                
+                while (iMeasurements > 0)
                 {
-                    arm_deg = encoder.getPosition(1) - 353.4082;
-                    ra_deg = encoder.getPosition(2) - 240.5566;
-                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
-                    Thread.Sleep(500);
-                }
-
-                    controller1.waitForIdle();
-
-                // Rotate RA 90 degrees
-                if (facingX)
-                {
-                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
-                }
-                else
-                {
-                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
-                }
-                facingX = !facingX;
-
-
-                // Take measurements at the stopped point
-                for (int i = 0; i < 5; i++)
-                {
-                    arm_deg = encoder.getPosition(1) - 353.4082; ;
-                    ra_deg = encoder.getPosition(2) - 240.5566; ;
-                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
-                    Thread.Sleep(500);
-                }
-
-
-                // Sweep back inwards
-                controller1.runSequence(Globals.SEQ_SWEEP_ARM_INWARD); // Note: Non-Blocking sequence run
-
-                // Take measurements as we go (same as above)
-                for (int i = 0; i < 80; i++)
-                {
-                    arm_deg = encoder.getPosition(1) - 353.4082; ;
-                    ra_deg = encoder.getPosition(2) - 240.5566; ;
-                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
-                    Thread.Sleep(500);
+                    if (ra_pos / Globals.STEP_ANGLE == iMeasurements)
+                    {
+                        double ra_pos1 = encoder.getPosition(2);
+                        double aut_pos1 = encoder.getPosition(3);
+                        double[] data = vna.OutputFinalData();
+                        ra_pos = (encoder.getPosition(2) - ra_pos1) / 2.0;
+                        aut_pos = (encoder.getPosition(3) - aut_pos1) / 2.0;
+                        saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                        iMeasurements--;
+                    }
                 }
                 controller1.waitForIdle();
-                // Step AUT once, then repeat
-                controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
+                
+                // Turn RA back to face Ex
+                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                facingX = true;
 
+                // Sweep arm outwards, and ra to maintain polarity with Ex
+                controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
+                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Non-Blocking sequence run
+
+                // Wait settling time for arm movement
+                Thread.Sleep(2000);
             }
 
         }
-        private void runDiscreteSystem3()
+        
+        private void runDiscreteSystem5()
         {
             /* 
              * Discrete Mode AUT rotates 360 degrees Ex, back 360 Ey, then arm steps
+             * AUT and RA are connected to cont1, Arm connected to cont2
              */
             bool facingX = true;
-            double ra_deg = 0.0;
-            // temp 10
+            double ra_pos= 0.0;
+            double aut_pos = 0.0;
+            double arm_pos = 0.0;
 
             for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
@@ -777,54 +809,52 @@ namespace Gui
                 {
                     
                     // Take measurement
-                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX);
+                    aut_pos = encoder.getPosition(3);
+                    arm_pos = encoder.getPosition(1);
+                    ra_pos = encoder.getPosition(2);
+                    double[] data = vna.OutputFinalData();
+                    saveMeasurement(aut_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
 
-                    // Move AUT (blocking)
-                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_OUTWARD);
-                    
+                    // Move AUT and RA (blocking)
+                    controller1.runSequenceBlocking(Globals.SEQ_STEP_RA_AUT_OUTWARD);
                 }
 
-                // Rotate RA to collect other polarity
-                if (facingX)
-                {
-                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
-                    ra_deg += 90.0;
-                }
-                else
-                {
-                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
-                    ra_deg -= 90.0;
-                }
-                facingX = !facingX;
+                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                facingX = false;
 
                 // Rotate AUT Inwards, collecting points along the same radius for Ey
                 for (double aut_deg = 360.0; !bwControlSystem.CancellationPending && aut_deg > 0.0; aut_deg -= Globals.STEP_ANGLE)
                 {
 
                     // Take measurement
-                    saveMeasurement(arm_deg, ra_deg, aut_deg,facingX);
+                    aut_pos = encoder.getPosition(3);
+                    arm_pos = encoder.getPosition(1);
+                    ra_pos = encoder.getPosition(2);
+                    double[] data = vna.OutputFinalData();
+                    saveMeasurement(aut_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
 
-                    // Move AUT (blocking)
-                    controller2.runSequenceBlocking(Globals.SEQ_STEP_AUT_INWARD);
+                    // Move AUT and RA (blocking)
+                    controller1.runSequenceBlocking(Globals.SEQ_STEP_RA_AUT_INWARD);
                 }
 
-                // Step arm out once
-                controller1.runSequenceBlocking(Globals.SEQ_STEP_ARM_AND_RA_OUTWARD);  
-            
-                // temp
+                // Turn RA to face Ex again
+                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                facingX = true;
+
+                // Step arm out, and ra to match
+                controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
+                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD);  
+                // Wait Settling time
                 Thread.Sleep(5000);
 
                 bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
             }
 
-            if (!!bwControlSystem.CancellationPending)
+            if (!bwControlSystem.CancellationPending)
             {
                 bwControlSystem.ReportProgress(100);
             }
-            else
-            {
-                MessageBox.Show("The scan has been prematurely terminated.");
-            }
+
         }
 
         private void runDiscreteSystem4()
@@ -891,14 +921,6 @@ namespace Gui
                 bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
             }
 
-            if (!!bwControlSystem.CancellationPending)
-            {
-                bwControlSystem.ReportProgress(100);
-            }
-            else
-            {
-                MessageBox.Show("The scan has been prematurely terminated.");
-            }
         }
 
         private void runZeroMotor(int controller_id, int motor_id, double home_angle)
@@ -959,10 +981,9 @@ namespace Gui
 
         }
 
-        private void saveMeasurement(double arm_deg, double ra_deg, double aut_deg, bool facingX)
+        private void saveMeasurement(double arm_deg, double ra_deg, double aut_deg, bool facingX, double re, double im)
         {
-            double[] data = vna.OutputFinalData();
-            Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, data[0],data[1]);
+            Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, re, im);
             m.appendToFile(Globals.FILENAME);
         }
         private void saveReading(double arm_deg, double ra_deg, double aut_deg, bool facingX, double re, double im)
@@ -1022,6 +1043,20 @@ namespace Gui
             // Hide Progress Bar
             pbScan.Visible = false;
             pbScan.Value = 0;
+
+            // If control system was cancelled before completing, go back to unconfigured state
+            if (e.Cancelled)
+            {
+                MessageBox.Show("Scan was terminated successfully");
+                Globals.SYS_STATE = State.Unconfigured;
+                lblSysState.Text = "Unconfigured";
+            }
+            // Else control system completed successfully
+            else
+            {
+                Globals.SYS_STATE = State.Ran;
+                lblSysState.Text = "Scan Completed";
+            }
         }
 
         private void btnStopScan_Click(object sender, EventArgs e)
@@ -1034,34 +1069,179 @@ namespace Gui
 
         private void btnStartMatlab_Click(object sender, EventArgs e)
         {
-            // %% add state check
-            bwMatlab.RunWorkerAsync();
-        }
+            // TEMP
+            Globals.SYS_STATE = State.Ran;
 
+            // --------------------------
+            // Validate System state
+            // --------------------------
+            if (Globals.SYS_STATE < State.Ran)
+            {
+                MessageBox.Show("Results cannot be calculated until the scan is complete.");
+                return;
+            }
+
+            // --------------------------
+            // Validate input
+            // --------------------------
+            double d_theta = 0.0;
+            try
+            {
+                d_theta = Double.Parse(txtBoxDTheta.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Invalid D_Theta value.");
+                return;
+            }
+
+            List<double> phi_cuts = new List<double>();
+            try
+            {
+                string[] tokens = (txtBoxPhis.Text).Split(',');
+                for (int i = 0; i < tokens.Length; i++)
+                {
+                    tokens[i].Trim();                   // remove whitespace
+                    double phi = Double.Parse(tokens[i]);
+                    phi_cuts.Add(Math.Round(phi, 2));   // store phi, rounded to 2 decimals
+                }
+                if (phi_cuts.Count < 1) throw new Exception(); // Ensure there is at least 1 phi cut
+            }
+            catch
+            {
+                MessageBox.Show("Invalid Phi cut values could not be parsed.");
+                return;
+            }
+
+            string nf_power_linear = "F";
+            try
+            {
+                if (cmbBoxNFPowerLinear.SelectedIndex == 0) // True
+                    nf_power_linear = "T";
+                else // False
+                    nf_power_linear = "F";
+            }
+            catch
+            {
+                MessageBox.Show("Invalid NF_Power_Linear Selection");
+                return;
+            }
+
+            string ff_power_phi_cuts = "F";
+            try
+            {
+                if (cmbBoxFFPowerPhiCuts.SelectedIndex == 0) // True
+                    ff_power_phi_cuts = "T";
+                else // False
+                    ff_power_phi_cuts = "F";
+            }
+            catch
+            {
+                MessageBox.Show("Invalid FF_Power_Phi_Cuts Selection");
+                return;
+            }
+
+            // --------------------------
+            // Build settings file, "settings.txt"
+            // --------------------------
+            string settings_file_content = "";
+            settings_file_content += "freq=" + Globals.FREQUENCY + "e9\n";
+            settings_file_content += "d_theta=" + d_theta + "\n";
+            
+            // Append list of phi cuts
+            settings_file_content += "phis=";
+            for (int i = 0; i < phi_cuts.Count-1; i++)
+            {
+                settings_file_content += phi_cuts[i] + ",";
+            }
+            settings_file_content += phi_cuts[phi_cuts.Count-1] + "\n";
+
+            settings_file_content += "NF_power_linear=" + nf_power_linear + "\n";
+            settings_file_content += "FF_power_phi_cuts=" + ff_power_phi_cuts + "\n";
+            settings_file_content += "simulation_name=" + Globals.LABEL + "\n";
+           
+            // Overwrite settings file
+            string settings_file = Directory.GetCurrentDirectory() + "\\MATLAB\\settings.txt";
+            File.WriteAllText(settings_file,settings_file_content);
+            
+            // --------------------------
+            // Start Matlab process
+            // --------------------------
+            Globals.SYS_STATE = State.PostProcessing;
+            lblSysState.Text = "Calculating Far-Field";
+
+            bwMatlab.RunWorkerAsync();
+                
+            // Disable button
+            btnStartMatlab.Text = "Calculating...";
+            btnStartMatlab.Enabled = false;   
+        }
 
         // Post processing
         private void bwMatlab_DoWork(object sender, DoWorkEventArgs e)
         {
             string matlab_exe = Directory.GetCurrentDirectory() + "\\MATLAB\\nf_ff_transformation.exe";
-            Start_MATLAB_Compiler_EXE(matlab_exe, "settings.txt", "first_test_data");
+            string settings_file = Directory.GetCurrentDirectory() + "\\MATLAB\\settings.txt";
+            string data_file = Directory.GetCurrentDirectory() + "\\MATLAB\\first_test_data.txt";
+            Start_MATLAB_Compiler_EXE(matlab_exe, settings_file, data_file);
 
         }
 
         private void bwMatlab_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            
 
         }
 
         private void bwMatlab_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            // Update system state to finished
+            Globals.SYS_STATE = State.DisplayingResults;
+            lblSysState.Text = "Far-Field Calculated";
 
+            // Enable button
+            btnStartMatlab.Text = "Calculate Near-Field";
+            btnStartMatlab.Enabled = true;
+
+            // Clear current Picture list
+            if (images_list == null)
+            {
+                images_list = new List<Image>();
+            }
+            else
+            {
+                images_list.Clear();
+            }
+            
+            // Load new images
+
+            // Near-field
+            Image nf = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_nf_p_linear.jpg");
+            images_list.Add(nf);
+
+            // Get all phase cut images
+            for (int i = 0; i < 2; i++)
+            {
+                Image img = null;
+                if (i == 0)
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_ff_p_phi = 0.0 Degree Cut.jpg");
+                else if (i == 1)
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_ff_p_phi = 45.0 Degree Cut.jpg");
+                images_list.Add(img);
+            }
+
+            // Set first image on display
+            image_index = 0;
+            pbImage.Image = images_list[image_index];
+            pbImage.SizeMode = PictureBoxSizeMode.StretchImage;
         }
 
         static void Start_MATLAB_Compiler_EXE(string path_to_exe, string settings_file, string data_file)
         {
             Process p = new Process();
+            p.StartInfo.CreateNoWindow = true;
             p.StartInfo.FileName = path_to_exe;
-            p.StartInfo.Arguments = "\"" + settings_file + "\" \"" + data_file + "\""; // surround files in quotes incase spaces
+            p.StartInfo.Arguments = settings_file + " " + data_file; // surround files in quotes incase spaces
             p.Start();  
             p.WaitForExit();
             /*
@@ -1072,6 +1252,45 @@ namespace Gui
             frm.Controls.Add(pictBox);
             Application.Run(frm);
             */
+
+        }
+
+        private void grpBoxSerialConnections_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabResults_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pbNearField_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            // Right image
+            if (images_list != null)
+            {
+                image_index = (image_index + 1) % images_list.Count;
+                pbImage.Image = images_list[image_index];
+                pbImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            // Left image
+            if (images_list != null)
+            {
+                image_index--;
+                if (image_index < 0) image_index += images_list.Count;
+                pbImage.Image = images_list[image_index];
+                pbImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
         }
 
     }

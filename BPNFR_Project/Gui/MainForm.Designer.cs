@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.lblEncoderPositions = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabConfiguration = new System.Windows.Forms.TabPage();
@@ -64,6 +65,7 @@
             this.lblEncoderComPort = new System.Windows.Forms.Label();
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
+            this.pbScan = new System.Windows.Forms.ProgressBar();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblScanStatus = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -74,6 +76,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnZeroMotors = new System.Windows.Forms.Button();
             this.tabResults = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.tsImages = new System.Windows.Forms.ToolStrip();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+            this.pbImage = new System.Windows.Forms.PictureBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.btnStartMatlab = new System.Windows.Forms.Button();
             this.indicatorCont1Connection = new System.Windows.Forms.Button();
             this.indicatorCont2Connection = new System.Windows.Forms.Button();
@@ -83,7 +92,24 @@
             this.bwLoading = new System.ComponentModel.BackgroundWorker();
             this.bwControlSystem = new System.ComponentModel.BackgroundWorker();
             this.bwMatlab = new System.ComponentModel.BackgroundWorker();
-            this.pbScan = new System.Windows.Forms.ProgressBar();
+            this.lblMainInfo = new System.Windows.Forms.Label();
+            this.lblStat = new System.Windows.Forms.Label();
+            this.lblSysState = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.txtBoxPhis = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txtBoxDTheta = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.txtBoxGridResolution = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.cmbBoxNFPowerLinear = new System.Windows.Forms.ComboBox();
+            this.cmbBoxFFPowerPhiCuts = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -95,12 +121,16 @@
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabResults.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.tsImages.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbImage)).BeginInit();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblEncoderPositions
             // 
             this.lblEncoderPositions.AutoSize = true;
-            this.lblEncoderPositions.Location = new System.Drawing.Point(94, 21);
+            this.lblEncoderPositions.Location = new System.Drawing.Point(442, 21);
             this.lblEncoderPositions.Name = "lblEncoderPositions";
             this.lblEncoderPositions.Size = new System.Drawing.Size(0, 13);
             this.lblEncoderPositions.TabIndex = 1;
@@ -336,6 +366,7 @@
             this.grpBoxSerialConnections.TabIndex = 11;
             this.grpBoxSerialConnections.TabStop = false;
             this.grpBoxSerialConnections.Text = "Serial Connections";
+            this.grpBoxSerialConnections.Enter += new System.EventHandler(this.grpBoxSerialConnections_Enter);
             // 
             // lblVNAConnectionStatus
             // 
@@ -478,6 +509,14 @@
             this.tabOperation.Text = "Operation";
             this.tabOperation.UseVisualStyleBackColor = true;
             // 
+            // pbScan
+            // 
+            this.pbScan.Location = new System.Drawing.Point(6, 225);
+            this.pbScan.Name = "pbScan";
+            this.pbScan.Size = new System.Drawing.Size(390, 23);
+            this.pbScan.TabIndex = 23;
+            this.pbScan.Visible = false;
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.lblScanStatus);
@@ -574,21 +613,110 @@
             // 
             // tabResults
             // 
-            this.tabResults.Controls.Add(this.btnStartMatlab);
+            this.tabResults.Controls.Add(this.panel1);
+            this.tabResults.Controls.Add(this.groupBox4);
             this.tabResults.Location = new System.Drawing.Point(4, 22);
             this.tabResults.Name = "tabResults";
             this.tabResults.Size = new System.Drawing.Size(796, 350);
             this.tabResults.TabIndex = 2;
             this.tabResults.Text = "Results";
             this.tabResults.UseVisualStyleBackColor = true;
+            this.tabResults.Click += new System.EventHandler(this.tabResults_Click);
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.tsImages);
+            this.panel1.Controls.Add(this.pbImage);
+            this.panel1.Location = new System.Drawing.Point(355, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(438, 338);
+            this.panel1.TabIndex = 24;
+            // 
+            // tsImages
+            // 
+            this.tsImages.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripButton1,
+            this.toolStripButton2});
+            this.tsImages.Location = new System.Drawing.Point(0, 0);
+            this.tsImages.Name = "tsImages";
+            this.tsImages.Size = new System.Drawing.Size(438, 25);
+            this.tsImages.TabIndex = 0;
+            // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton1.Text = "<";
+            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
+            // 
+            // toolStripButton2
+            // 
+            this.toolStripButton2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
+            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton2.Name = "toolStripButton2";
+            this.toolStripButton2.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton2.Text = ">";
+            this.toolStripButton2.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            // 
+            // pbImage
+            // 
+            this.pbImage.Location = new System.Drawing.Point(72, 28);
+            this.pbImage.Name = "pbImage";
+            this.pbImage.Size = new System.Drawing.Size(300, 300);
+            this.pbImage.TabIndex = 22;
+            this.pbImage.TabStop = false;
+            this.pbImage.Click += new System.EventHandler(this.pbNearField_Click);
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.cmbBoxFFPowerPhiCuts);
+            this.groupBox4.Controls.Add(this.cmbBoxNFPowerLinear);
+            this.groupBox4.Controls.Add(this.label16);
+            this.groupBox4.Controls.Add(this.label17);
+            this.groupBox4.Controls.Add(this.label14);
+            this.groupBox4.Controls.Add(this.label15);
+            this.groupBox4.Controls.Add(this.label12);
+            this.groupBox4.Controls.Add(this.txtBoxGridResolution);
+            this.groupBox4.Controls.Add(this.label13);
+            this.groupBox4.Controls.Add(this.label10);
+            this.groupBox4.Controls.Add(this.txtBoxDTheta);
+            this.groupBox4.Controls.Add(this.label11);
+            this.groupBox4.Controls.Add(this.label9);
+            this.groupBox4.Controls.Add(this.txtBoxPhis);
+            this.groupBox4.Controls.Add(this.label8);
+            this.groupBox4.Controls.Add(this.label7);
+            this.groupBox4.Controls.Add(this.btnStartMatlab);
+            this.groupBox4.Location = new System.Drawing.Point(13, 12);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(316, 323);
+            this.groupBox4.TabIndex = 21;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Calculate Far-Field";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 18);
+            this.label7.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(240, 39);
+            this.label7.TabIndex = 20;
+            this.label7.Text = "Once a scan is complete the near-field to far-field transformation can be perform" +
+    "ed. This process takes about 3 minutes.";
             // 
             // btnStartMatlab
             // 
-            this.btnStartMatlab.Location = new System.Drawing.Point(41, 56);
+            this.btnStartMatlab.Location = new System.Drawing.Point(162, 294);
             this.btnStartMatlab.Name = "btnStartMatlab";
             this.btnStartMatlab.Size = new System.Drawing.Size(146, 23);
             this.btnStartMatlab.TabIndex = 0;
-            this.btnStartMatlab.Text = "Calculate Near-Field";
+            this.btnStartMatlab.Text = "Calculate Far-Field";
             this.btnStartMatlab.UseVisualStyleBackColor = true;
             this.btnStartMatlab.Click += new System.EventHandler(this.btnStartMatlab_Click);
             // 
@@ -597,7 +725,7 @@
             this.indicatorCont1Connection.BackColor = System.Drawing.Color.Red;
             this.indicatorCont1Connection.Enabled = false;
             this.indicatorCont1Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.indicatorCont1Connection.Location = new System.Drawing.Point(17, 12);
+            this.indicatorCont1Connection.Location = new System.Drawing.Point(365, 12);
             this.indicatorCont1Connection.Name = "indicatorCont1Connection";
             this.indicatorCont1Connection.Size = new System.Drawing.Size(77, 47);
             this.indicatorCont1Connection.TabIndex = 4;
@@ -609,7 +737,7 @@
             this.indicatorCont2Connection.BackColor = System.Drawing.Color.Red;
             this.indicatorCont2Connection.Enabled = false;
             this.indicatorCont2Connection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.indicatorCont2Connection.Location = new System.Drawing.Point(100, 12);
+            this.indicatorCont2Connection.Location = new System.Drawing.Point(448, 12);
             this.indicatorCont2Connection.Name = "indicatorCont2Connection";
             this.indicatorCont2Connection.Size = new System.Drawing.Size(77, 47);
             this.indicatorCont2Connection.TabIndex = 5;
@@ -621,7 +749,7 @@
             this.indicatorEncoderConnection.BackColor = System.Drawing.Color.Red;
             this.indicatorEncoderConnection.Enabled = false;
             this.indicatorEncoderConnection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.indicatorEncoderConnection.Location = new System.Drawing.Point(183, 12);
+            this.indicatorEncoderConnection.Location = new System.Drawing.Point(531, 12);
             this.indicatorEncoderConnection.Name = "indicatorEncoderConnection";
             this.indicatorEncoderConnection.Size = new System.Drawing.Size(77, 47);
             this.indicatorEncoderConnection.TabIndex = 6;
@@ -635,7 +763,7 @@
             this.indicatorVNAConnection.FlatAppearance.BorderColor = System.Drawing.Color.Red;
             this.indicatorVNAConnection.FlatAppearance.BorderSize = 10;
             this.indicatorVNAConnection.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.indicatorVNAConnection.Location = new System.Drawing.Point(266, 12);
+            this.indicatorVNAConnection.Location = new System.Drawing.Point(614, 12);
             this.indicatorVNAConnection.Name = "indicatorVNAConnection";
             this.indicatorVNAConnection.Size = new System.Drawing.Size(77, 47);
             this.indicatorVNAConnection.TabIndex = 7;
@@ -676,19 +804,191 @@
             this.bwMatlab.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwMatlab_ProgressChanged);
             this.bwMatlab.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwMatlab_RunWorkerCompleted);
             // 
-            // pbScan
+            // lblMainInfo
             // 
-            this.pbScan.Location = new System.Drawing.Point(6, 225);
-            this.pbScan.Name = "pbScan";
-            this.pbScan.Size = new System.Drawing.Size(390, 23);
-            this.pbScan.TabIndex = 23;
-            this.pbScan.Visible = false;
+            this.lblMainInfo.AutoSize = true;
+            this.lblMainInfo.Location = new System.Drawing.Point(18, 12);
+            this.lblMainInfo.MaximumSize = new System.Drawing.Size(250, 100);
+            this.lblMainInfo.Name = "lblMainInfo";
+            this.lblMainInfo.Size = new System.Drawing.Size(225, 13);
+            this.lblMainInfo.TabIndex = 21;
+            this.lblMainInfo.Text = "Bi-Polar Planar Near Field Measurment System";
+            // 
+            // lblStat
+            // 
+            this.lblStat.AutoSize = true;
+            this.lblStat.Location = new System.Drawing.Point(18, 29);
+            this.lblStat.MaximumSize = new System.Drawing.Size(250, 100);
+            this.lblStat.Name = "lblStat";
+            this.lblStat.Size = new System.Drawing.Size(40, 13);
+            this.lblStat.TabIndex = 22;
+            this.lblStat.Text = "Status:";
+            // 
+            // lblSysState
+            // 
+            this.lblSysState.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblSysState.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSysState.Location = new System.Drawing.Point(59, 30);
+            this.lblSysState.MaximumSize = new System.Drawing.Size(250, 100);
+            this.lblSysState.Name = "lblSysState";
+            this.lblSysState.Size = new System.Drawing.Size(200, 30);
+            this.lblSysState.TabIndex = 23;
+            this.lblSysState.Text = "Unconfigured";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 106);
+            this.label8.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 13);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "Phi-Cuts:";
+            // 
+            // txtBoxPhis
+            // 
+            this.txtBoxPhis.Location = new System.Drawing.Point(187, 99);
+            this.txtBoxPhis.Name = "txtBoxPhis";
+            this.txtBoxPhis.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxPhis.TabIndex = 22;
+            this.txtBoxPhis.Text = "0,45";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 122);
+            this.label9.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(247, 13);
+            this.label9.TabIndex = 23;
+            this.label9.Text = "Enter as comma separated degree-values, i.e: 0,45";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(6, 83);
+            this.label10.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(68, 13);
+            this.label10.TabIndex = 26;
+            this.label10.Text = "(Explanation)";
+            // 
+            // txtBoxDTheta
+            // 
+            this.txtBoxDTheta.Location = new System.Drawing.Point(187, 60);
+            this.txtBoxDTheta.Name = "txtBoxDTheta";
+            this.txtBoxDTheta.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxDTheta.TabIndex = 25;
+            this.txtBoxDTheta.Text = "0.1";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 67);
+            this.label11.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(66, 13);
+            this.label11.TabIndex = 24;
+            this.label11.Text = "Delta Theta:";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(6, 166);
+            this.label12.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(68, 13);
+            this.label12.TabIndex = 29;
+            this.label12.Text = "(Explanation)";
+            // 
+            // txtBoxGridResolution
+            // 
+            this.txtBoxGridResolution.Location = new System.Drawing.Point(187, 143);
+            this.txtBoxGridResolution.Name = "txtBoxGridResolution";
+            this.txtBoxGridResolution.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxGridResolution.TabIndex = 28;
+            this.txtBoxGridResolution.Text = "0.5";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(6, 150);
+            this.label13.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(82, 13);
+            this.label13.TabIndex = 27;
+            this.label13.Text = "Grid Resolution:";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(6, 207);
+            this.label14.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(68, 13);
+            this.label14.TabIndex = 32;
+            this.label14.Text = "(Explanation)";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 191);
+            this.label15.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(86, 13);
+            this.label15.TabIndex = 30;
+            this.label15.Text = "NF Power Linear";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(6, 246);
+            this.label16.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(68, 13);
+            this.label16.TabIndex = 35;
+            this.label16.Text = "(Explanation)";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(6, 230);
+            this.label17.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(94, 13);
+            this.label17.TabIndex = 33;
+            this.label17.Text = "FF Power Phi Cuts";
+            // 
+            // cmbBoxNFPowerLinear
+            // 
+            this.cmbBoxNFPowerLinear.FormattingEnabled = true;
+            this.cmbBoxNFPowerLinear.Items.AddRange(new object[] {
+            "True",
+            "False"});
+            this.cmbBoxNFPowerLinear.Location = new System.Drawing.Point(187, 191);
+            this.cmbBoxNFPowerLinear.Name = "cmbBoxNFPowerLinear";
+            this.cmbBoxNFPowerLinear.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxNFPowerLinear.TabIndex = 36;
+            // 
+            // cmbBoxFFPowerPhiCuts
+            // 
+            this.cmbBoxFFPowerPhiCuts.FormattingEnabled = true;
+            this.cmbBoxFFPowerPhiCuts.Items.AddRange(new object[] {
+            "True",
+            "False"});
+            this.cmbBoxFFPowerPhiCuts.Location = new System.Drawing.Point(187, 227);
+            this.cmbBoxFFPowerPhiCuts.Name = "cmbBoxFFPowerPhiCuts";
+            this.cmbBoxFFPowerPhiCuts.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxFFPowerPhiCuts.TabIndex = 37;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(833, 453);
+            this.Controls.Add(this.lblSysState);
+            this.Controls.Add(this.lblStat);
+            this.Controls.Add(this.lblMainInfo);
             this.Controls.Add(this.btnEStop);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.indicatorVNAConnection);
@@ -717,6 +1017,13 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabResults.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.tsImages.ResumeLayout(false);
+            this.tsImages.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbImage)).EndInit();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -780,6 +1087,31 @@
         private System.Windows.Forms.Button btnStartMatlab;
         private System.ComponentModel.BackgroundWorker bwMatlab;
         private System.Windows.Forms.ProgressBar pbScan;
+        private System.Windows.Forms.Label lblMainInfo;
+        private System.Windows.Forms.Label lblStat;
+        private System.Windows.Forms.Label lblSysState;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.PictureBox pbImage;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStrip tsImages;
+        private System.Windows.Forms.ToolStripButton toolStripButton1;
+        private System.Windows.Forms.ToolStripButton toolStripButton2;
+        private System.Windows.Forms.ComboBox cmbBoxFFPowerPhiCuts;
+        private System.Windows.Forms.ComboBox cmbBoxNFPowerLinear;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TextBox txtBoxGridResolution;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox txtBoxDTheta;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox txtBoxPhis;
+        private System.Windows.Forms.Label label8;
     }
 }
 

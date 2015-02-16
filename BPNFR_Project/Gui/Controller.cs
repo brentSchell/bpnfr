@@ -542,7 +542,7 @@ namespace Gui
 
             return SendSequence(seq, seq_id);
         }
-        // Available sequence programs interface
+        
         public bool loadDiscreteAUT360Inwards(int seq_id)
         {
             string seq = "Seq " + seq_id + "\r";
@@ -558,7 +558,163 @@ namespace Gui
 
             return SendSequence(seq, seq_id);
         }
+        
+        public bool loadAUTRA360Inwards(int seq_id)
+        {
+            string seq = "Seq " + seq_id + "\r";
 
+            seq += "D1 360.0 \r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 - \r";                               // Inward %%                
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "D2 360.0 \r";               // set ra step angle
+            seq += "V2 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS2 " + Globals.START_VEL + "\r";
+            seq += "H2 - \r";                               // Inward %%                
+            seq += "T2 " + Globals.ACCEL + "\r";
+
+            seq += "INCC";  // move both motors at once
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadAUTRA360Outwards(int seq_id)
+        {
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 360.0 \r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 + \r";                               // Inward %%                
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "D2 360.0 \r";               // set ra step angle
+            seq += "V2 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS2 " + Globals.START_VEL + "\r";
+            seq += "H2 + \r";                                               
+            seq += "T2 " + Globals.ACCEL + "\r";
+
+            seq += "INCC";  // move both motors at once
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadArmStepInwards(int seq_id, double step_angle)
+        {
+            // Slow speeds, step arm
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 - \r";                               // Inward                
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "INC1";
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadArmStepOutwards(int seq_id, double step_angle)
+        {
+            // Slow speeds, step arm
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.START_VEL + "\r";
+            seq += "H1 + \r";                               // Outward               
+            seq += "T1 " + Globals.ACCEL + "\r";
+
+            seq += "INC1";
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadStepAUTRAOutwards(int seq_id, double step_angle)
+        {
+            // Fast speeds, move aut and ra
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.FAST_START_VEL +"\r";
+            seq += "H1 - \r";                               // Outward (on AUT is opposite)     
+            seq += "T1 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "D2 " + step_angle + "\r";               // set ra step angle
+            seq += "V2 " + Globals.FAST_VEL + "\r";              // set ra motor speed
+            seq += "VS2 " + Globals.FAST_START_VEL + "\r";
+            seq += "H2 + \r";                               // Outward (on AUT is opposite)     
+            seq += "T2 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "INCC";  // move both motors
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadStepAUTRAInwards(int seq_id, double step_angle)
+        {
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D1 " + step_angle + "\r";               // set aut step angle
+            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.FAST_START_VEL + "\r";
+            seq += "H1 + \r";                               // Inward (on AUT is opposite)     
+            seq += "T1 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "D2 " + step_angle + "\r";               // set ra step angle
+            seq += "V2 " + Globals.FAST_VEL + "\r";              // set ra motor speed
+            seq += "VS2 " + Globals.FAST_START_VEL + "\r";
+            seq += "H2 - \r";                               // Inward      
+            seq += "T2 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "INCC";  // move both motors
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadStepRAOutwards(int seq_id, double step_angle)
+        {
+            // Step RA, fast vels
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D2 " + step_angle + "\r";               // set ra step angle
+            seq += "V2 " + Globals.FAST_VEL + "\r";              // set ra motor speed
+            seq += "VS2 " + Globals.FAST_START_VEL + "\r";
+            seq += "H2 + \r";                               // Outward      
+            seq += "T2 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "INC2";  // move both motors
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
+
+        public bool loadStepRAInwards(int seq_id, double step_angle)
+        {
+            // Step RA, fast vels
+            string seq = "Seq " + seq_id + "\r";
+
+            seq += "D2 " + step_angle + "\r";               // set ra step angle
+            seq += "V2 " + Globals.FAST_VEL + "\r";              // set ra motor speed
+            seq += "VS2 " + Globals.FAST_START_VEL + "\r";
+            seq += "H2 - \r";                               // Outward      
+            seq += "T2 " + Globals.FAST_ACCEL + "\r";
+
+            seq += "INC2";  // move both motors
+            seq += "\r\r";
+
+            return SendSequence(seq, seq_id);
+        }
 
         public bool EStop()
         {
