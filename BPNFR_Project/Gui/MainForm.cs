@@ -742,6 +742,7 @@ namespace Gui
                         double[] data = vna.OutputFinalData();
                         ra_pos = (encoder.getPosition(2) - ra_pos1) / 2.0;
                         aut_pos = (encoder.getPosition(3) - aut_pos1) / 2.0;
+                        
                         saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
                         iMeasurements++;
                     }
@@ -822,7 +823,6 @@ namespace Gui
                     controller1.runSequenceBlocking(Globals.SEQ_STEP_RA_AUT_OUTWARD);
                     ra_deg += Globals.STEP_ANGLE;
                     aut_deg += Globals.STEP_ANGLE;
-                }
                 }
 
                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
@@ -999,6 +999,7 @@ namespace Gui
             Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, re, im);
             m.appendToFile(Globals.FILENAME);
         }
+        
         private void saveReading(double arm_deg, double ra_deg, double aut_deg, bool facingX, double re, double im)
         {
             double[] data = vna.OutputFinalData();

@@ -1,8 +1,8 @@
 
 #include <SPI.h>
-boolean debug = false;
-int CS_ARM = 3;
-int CS_RA = 4;
+boolean debug = true;
+int CS_ARM = 4;
+int CS_RA = 3;
 int CS_AUT = 5;
 int CS = 3; 
 int MAX_TRIES = 10;
@@ -68,12 +68,30 @@ void loop()
      Serial.write("\n"); 
 
      CS = -1;
-   } else if (command == 0x35) { // Set Encoder 1 Zero // '5'
-     setZero(1);  
-   } else if (command == 0x36) { // Set Encoder 1 Zero  '6'
-     setZero(2);     
-   } else if (command == 0x37) { // Set Encoder 1 Zero  '7'
-     setZero(3);  
+   } else if (command == 0x35) { // Set Encoder 1 (ARM) Zero ASCII '5'
+     uint8_t r = setZero(CS_ARM);  
+     // Replies with "command, 0x80" if success 
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(r,HEX);
+     Serial.write("\n");
+     CS = -1;
+   } else if (command == 0x36) { // Set Encoder 2 (RA) Zero  ASCII '6'
+     uint8_t r = setZero(CS_RA);     
+     // Replies with "command, 0x80" if success 
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(r,HEX);
+     Serial.write("\n");
+     CS = -1;
+   } else if (command == 0x37) { // Set Encoder 3 (AUT) Zero ASCII '7'
+     uint8_t r = setZero(CS_AUT); 
+     // Replies with "command, 0x80" if success 
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(r,HEX);
+     Serial.write("\n"); 
+     CS = -1;
    } else {
    //  Serial.println(command);
      CS = -1;  
@@ -103,26 +121,18 @@ void loop()
        Serial.println(pos_avg,DEC); 
      }
      
-     // Send response back to master
-     //uint8_t msb = 0xF0 & (pos_avg >> 8);
-     //uint8_t lsb = pos_avg; 
-     /*Serial.print("pos: ");
-     Serial.println(pos_avg);
-     Serial.println(pos_avg,HEX);
-     Serial.println(msb,HEX);
-     Serial.println(lsb,HEX);
-     */
-     
+     // Send response back to master    
      Serial.write(command);
      Serial.write(",");
      Serial.print((int)pos_avg,DEC);
      Serial.write("\n");
      
-     //double stop_time = micros() - start_time;
-     // Send time delay back
-     //Serial.print("T,");
-     //Serial.println(stop_time,DEC); 
-     
+     // Send time delay back 
+     /*
+     double stop_time = micros() - start_time;
+     Serial.print("T,");
+     Serial.println(stop_time,DEC); 
+     */
    }
  
 }
@@ -132,7 +142,7 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
    int ABSposition = -1;
 
    SPI.begin();    //start transmition
-   digitalWrite(CS,LOW);
+   //digitalWrite(CS,LOW);
    
    SPI_T(0x10);   //issue read command
    recieved = SPI_T(0x00);    //issue NOP to check if encoder is ready to send
@@ -164,7 +174,7 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
    }
    
    
-   digitalWrite(CS,HIGH);  
+//   digitalWrite(CS,HIGH);  
    SPI.end();    //end transmition 
    
    temp[0] &=~ 0xF0;    //mask out the first 4 bits
@@ -178,6 +188,116 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
    return ABSposition;
 }
 
+
+
+// TODO: check all 3 connections, give status to master based on these
+int getStatus() {
+  uint8_t rec;
+  int tries;
+  SPI.begin();
+  boolean ARM_working, AUT_working, RA_working;
+  
+  // Check arm connection
+  //digitalWrite(CS_ARM,LOW);  
+  CS = CS_ARM;
+  rec = SPI_T(0x00);
+  tries = 0;
+  while (rec != 0x00 && tries < MAX_TRIES) {
+    delay(2);
+    rec = SPI_T(0x00);  
+  }
+  ARM_working = (rec == 0x00);
+  //digitalWrite(CS_ARM,HIGH);  
+  delay(100);
+  
+  // Check RA connection
+  //digitalWrite(CS_RA,LOW);
+  CS = CS_RA;  
+  rec = SPI_T(0x00);
+  tries = 0;
+  while (rec != 0x00 && tries < MAX_TRIES) {
+    delay(2);
+    rec = SPI_T(0x00);  
+  }
+  RA_working = (rec == 0x00);
+  //digitalWrite(CS_RA,HIGH);  
+  delay(100);
+  
+  
+  // Check AUT connection
+  //digitalWrite(CS_AUT,LOW);  
+  CS = CS_AUT;
+  rec = SPI_T(0x00);
+  tries = 0;
+  while (rec != 0x00 && tries < MAX_TRIES) {
+    delay(2);
+    rec = SPI_T(0x00);  
+  }
+  AUT_working = (rec == 0x00); 
+  //digitalWrite(CS_AUT,HIGH);  
+  
+  SPI.end();
+  
+  // Set status integer based on which encoders are working
+  int stat = 0;
+  if (ARM_working && RA_working && AUT_working) {
+    stat = 1;
+  } else if (ARM_working && RA_working && !AUT_working) {
+    stat = 2;
+  } else if (ARM_working && !RA_working && AUT_working) {
+    stat = 3;
+  } else if (ARM_working && !RA_working && !AUT_working) {
+    stat = 4;    
+  } else if (!ARM_working && RA_working && AUT_working) {
+    stat = 5;
+  } else if (!ARM_working && RA_working && !AUT_working) {
+    stat = 6;
+  } else if (!ARM_working && !RA_working && AUT_working) {
+    stat = 7;
+  } else if (!ARM_working && !RA_working && !AUT_working) {
+    stat = 8;
+  }
+  
+  return stat;
+}
+
+uint8_t setZero(int CS_PIN) {
+  uint8_t rec;
+  
+  // Write all 3 high incase they arent
+  digitalWrite(CS_ARM,HIGH);
+  digitalWrite(CS_AUT,HIGH);
+  digitalWrite(CS_RA,HIGH);
+  
+  SPI.begin();
+  
+  CS = CS_PIN;
+  int i; 
+  for (i=0; i<25; i++) {
+    rec = SPI_T(0xA5); // send no op a bunch to clear encoder
+    delay(2);
+    if (debug) Serial.println(rec);
+  }
+  
+  rec = SPI_T(0x70); // send set_zero command
+  if (debug) Serial.println("Sent set zero command");
+  delay(100);
+
+  int tries = 0;
+  
+  while (rec != 0x80 && tries < 200) {
+    delay(100);
+    rec = SPI_T(0xA5); // send no_op
+    if (debug) Serial.println(rec,HEX);
+    tries++;
+  }
+    
+  //digitalWrite(CS_PIN,HIGH);  // unselect chip
+  SPI.end();    //end transmition 
+  
+  return rec;
+}
+
 uint8_t SPI_T (uint8_t msg)    //Repetive SPI transmit sequence
 {
    uint8_t msg_temp = 0;  //vairable to hold recieved data
@@ -185,14 +305,4 @@ uint8_t SPI_T (uint8_t msg)    //Repetive SPI transmit sequence
    msg_temp = SPI.transfer(msg);    //send and recieve
    digitalWrite(CS,HIGH);    //deselect spi device
    return(msg_temp);      //return recieved byte
-}
-
-// TODO: check all 3 connections, give status to master based on these
-int getStatus() {
-  return 1;
-}
-
-void setZero() {
-  
-  // TODO
 }
