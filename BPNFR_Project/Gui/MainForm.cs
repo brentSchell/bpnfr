@@ -562,17 +562,17 @@ namespace Gui
             controller1.InitMotor(1);
             controller1.InitMotor(2);
             controller2.InitMotor(1);
-            bool result = false;
+            bool result = true;
 
             // 2. Load required control sequences to motors
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
                 // Load all control sequences required for continuous mode
-                result = controller1.loadAUTRA360Inwards(Globals.SEQ_RA_AUT_360_INWARD);
-                result = controller1.loadAUTRA360Outwards(Globals.SEQ_RA_AUT_360_OUTWARD);
-                result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
-                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
-                result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD, Globals.STEP_ANGLE);
+                if (result) result = controller1.loadAUTRA360Inwards(Globals.SEQ_RA_AUT_360_INWARD);
+                if (result) result = controller1.loadAUTRA360Outwards(Globals.SEQ_RA_AUT_360_OUTWARD);
+                if (result) result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+                if (result) result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                if (result) result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD, Globals.STEP_ANGLE);
 
                 if (!result)
                 {
@@ -581,7 +581,7 @@ namespace Gui
                     return;
                 }
 
-                result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
+                if (result) result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
@@ -593,11 +593,11 @@ namespace Gui
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
                 // Load all sequence programs used by discrete control system
-                result = controller1.loadStepAUTRAOutwards(Globals.SEQ_STEP_RA_AUT_OUTWARD, Globals.STEP_ANGLE);
-                result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
-                result = controller1.loadStepAUTRAInwards(Globals.SEQ_STEP_RA_AUT_INWARD, Globals.STEP_ANGLE);
-                result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
-                result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD,Globals.STEP_ANGLE);
+                if (result) result = controller1.loadStepAUTRAOutwards(Globals.SEQ_STEP_RA_AUT_OUTWARD, Globals.STEP_ANGLE);
+                if (result) result = controller1.loadRATurn90Outwards(Globals.SEQ_TURN_RA_90_OUTWARD);
+                if (result) result = controller1.loadStepAUTRAInwards(Globals.SEQ_STEP_RA_AUT_INWARD, Globals.STEP_ANGLE);
+                if (result) result = controller1.loadRATurn90Inwards(Globals.SEQ_TURN_RA_90_INWARD);
+                if (result) result = controller1.loadStepRAInwards(Globals.SEQ_STEP_RA_INWARD, Globals.STEP_ANGLE);
 
                 if (!result)
                 {
@@ -606,7 +606,7 @@ namespace Gui
                     return;
                 }
 
-                result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
+                if (result) result = controller2.loadArmStepOutwards(Globals.SEQ_STEP_ARM_OUTWARD, Globals.STEP_ANGLE);
                 if (!result)
                 {
                     MessageBox.Show("An error occurred loading control sequences to controller 2.\n" +
@@ -623,11 +623,6 @@ namespace Gui
             // 3. Configure VNA
             vna.ConfigureVNA(Globals.FREQUENCY);
 
-            // Update system state, and finish
-            Globals.SYS_STATE = State.Configured;
-            lblSysState.Text = "Configured";
-
-            MessageBox.Show("Motors and VNA have been configured successfully.");
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -638,7 +633,14 @@ namespace Gui
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             btnLoadMotors.Text = "Load"; // reset button text
-            this.Enabled = true;
+            this.Enabled = true; // re-enable ui
+
+
+            // Update system state, and finish
+            Globals.SYS_STATE = State.Configured;
+            lblSysState.Text = "Configured";
+
+            MessageBox.Show("Motors and VNA have been configured successfully.");
         }
 
         private void btnZeroMotors_Click(object sender, EventArgs e)
@@ -701,10 +703,8 @@ namespace Gui
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                // runDiscreteSystem3();
-                runDiscreteSystem4();
+                runDiscreteSystem5();
 
-                //control_system_thread = new Thread(control_system_worker.runDiscreteSystem3); // Discrete system 2 (AUT does majority of moving)
             }
 
             MessageBox.Show("Scan is completed.");
@@ -733,7 +733,7 @@ namespace Gui
                 int iMeasurements = 0;
                 arm_pos = encoder.getPosition(1);
                 ra_pos = encoder.getPosition(2) - 240.5566;
-                while (iMeasurements < 360.0 / Globals.STEP_ANGLE)
+                while (iMeasurements < ( 360.0 / Globals.STEP_ANGLE) )
                 {
                     if (ra_pos / Globals.STEP_ANGLE == iMeasurements)
                     {
@@ -801,11 +801,14 @@ namespace Gui
             double aut_pos = 0.0;
             double arm_pos = 0.0;
 
-            for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            double ra_deg = 0.0;
+            double aut_deg = 0.0;
+            double arm_deg = 0.0;
+            while (!bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE)
             {
                 
                 // Rotate AUT Outwards, collecting points along the same radius for Ex
-                for (double aut_deg = 0.0; !bwControlSystem.CancellationPending && aut_deg < 360.0; aut_deg += Globals.STEP_ANGLE)
+                while (!bwControlSystem.CancellationPending && aut_deg < 360.0)
                 {
                     
                     // Take measurement
@@ -813,37 +816,47 @@ namespace Gui
                     arm_pos = encoder.getPosition(1);
                     ra_pos = encoder.getPosition(2);
                     double[] data = vna.OutputFinalData();
-                    saveMeasurement(aut_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX, data[0], data[1]);
 
                     // Move AUT and RA (blocking)
                     controller1.runSequenceBlocking(Globals.SEQ_STEP_RA_AUT_OUTWARD);
+                    ra_deg += Globals.STEP_ANGLE;
+                    aut_deg += Globals.STEP_ANGLE;
+                }
                 }
 
                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                ra_deg += 90.0;
                 facingX = false;
 
                 // Rotate AUT Inwards, collecting points along the same radius for Ey
-                for (double aut_deg = 360.0; !bwControlSystem.CancellationPending && aut_deg > 0.0; aut_deg -= Globals.STEP_ANGLE)
+                while (!bwControlSystem.CancellationPending && aut_deg > 0.0)
                 {
 
                     // Take measurement
-                    aut_pos = encoder.getPosition(3);
-                    arm_pos = encoder.getPosition(1);
-                    ra_pos = encoder.getPosition(2);
+                    //aut_pos = encoder.getPosition(3);
+                    //arm_pos = encoder.getPosition(1);
+                    //ra_pos = encoder.getPosition(2);
                     double[] data = vna.OutputFinalData();
-                    saveMeasurement(aut_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    saveMeasurement(arm_deg, ra_deg, aut_deg, facingX, data[0], data[1]);
 
                     // Move AUT and RA (blocking)
                     controller1.runSequenceBlocking(Globals.SEQ_STEP_RA_AUT_INWARD);
+                    ra_deg -= Globals.STEP_ANGLE;
+                    aut_deg -= Globals.STEP_ANGLE;
                 }
 
                 // Turn RA to face Ex again
                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                ra_deg -= 90.0;
                 facingX = true;
 
                 // Step arm out, and ra to match
                 controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
-                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD);  
+                ra_deg -= Globals.STEP_ANGLE;
+                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD);
+                arm_deg += Globals.STEP_ANGLE;
+
                 // Wait Settling time
                 Thread.Sleep(5000);
 

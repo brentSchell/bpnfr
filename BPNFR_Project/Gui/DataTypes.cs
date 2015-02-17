@@ -86,6 +86,10 @@ namespace Gui
         public static double ACCEL = 500;   // 0.5 = FASTEST, 1000 = SLOWEST
         public static double FAST_ACCEL = 100; // 0.5 = FASTEST, 1000 = SLOWEST
 
+        public static double ARM_VEL = 75;
+        public static double ARM_START_VEL = 10;
+        public static double ARM_ACCEL = 1000;
+        public static string ARM_RAMP = "1,200000"; // jerk time limit maximum
         // System state
         public static State SYS_STATE;
 

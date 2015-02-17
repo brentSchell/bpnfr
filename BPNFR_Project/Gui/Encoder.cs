@@ -52,9 +52,15 @@ namespace Gui
             }
             if (pos != -1)
             {
-                // convert value from 0 to 2048
+                // convert value from 0 to 4096 to 0.0 to 360.0 degrees
                 pos = pos * 360.0 / 4096.0;
+
+                if (id == 2) {  // RA is mounted opposite others, needs to be reversed
+                    pos = 360.0 - pos;
+                }
             }
+
+            
             return pos;
         }
         

@@ -609,10 +609,11 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 " + step_angle + "\r";               // set aut step angle
-            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
-            seq += "VS1 " + Globals.START_VEL + "\r";
-            seq += "H1 - \r";                               // Inward                
-            seq += "T1 " + Globals.ACCEL + "\r";
+            seq += "V1 " + Globals.ARM_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.ARM_START_VEL + "\r";
+            seq += "H1 + \r";                               // Inwards               
+            seq += "T1 " + Globals.ARM_ACCEL + "\r";
+            seq += "RAMP1 " + Globals.ARM_RAMP + "\r";
 
             seq += "INC1";
             seq += "\r\r";
@@ -626,10 +627,11 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 " + step_angle + "\r";               // set aut step angle
-            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
-            seq += "VS1 " + Globals.START_VEL + "\r";
-            seq += "H1 + \r";                               // Outward               
-            seq += "T1 " + Globals.ACCEL + "\r";
+            seq += "V1 " + Globals.ARM_VEL + "\r";              // set arm motor speed
+            seq += "VS1 " + Globals.ARM_START_VEL + "\r";
+            seq += "H1 - \r";                               // Outward               
+            seq += "T1 " + Globals.ARM_ACCEL + "\r";
+            seq += "RAMP1 " + Globals.ARM_RAMP + "\r"; 
 
             seq += "INC1";
             seq += "\r\r";
