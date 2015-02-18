@@ -1,6 +1,6 @@
 
 #include <SPI.h>
-boolean debug = true;
+boolean debug = false; // for verbose output
 int CS_ARM = 4;
 int CS_RA = 3;
 int CS_AUT = 5;
@@ -265,9 +265,9 @@ uint8_t setZero(int CS_PIN) {
   uint8_t rec;
   
   // Write all 3 high incase they arent
-  digitalWrite(CS_ARM,HIGH);
-  digitalWrite(CS_AUT,HIGH);
-  digitalWrite(CS_RA,HIGH);
+  //digitalWrite(CS_ARM,HIGH);
+  //digitalWrite(CS_AUT,HIGH);
+  //digitalWrite(CS_RA,HIGH);
   
   SPI.begin();
   

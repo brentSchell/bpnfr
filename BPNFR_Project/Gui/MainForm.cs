@@ -692,9 +692,10 @@ namespace Gui
         {
             if (Globals.SYS_STATE == State.Zeroing) // Zero System
             {
-                runZeroMotor(1, 1, 0.0);    // arm
                 runZeroMotor(1, 2, 0.0);    // ra
-                // res = runZeroMotor(2, 1, 0.0);  // aut
+                runZeroMotor(2, 1, 0.0);  // arm
+                runZeroMotor(1, 1, 0.0);    // aut
+
             }
             else if (Globals.MEASUREMENT_MODE == 1) // Continuous
             {
@@ -727,55 +728,51 @@ namespace Gui
             double arm_pos = 0.0;
             for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
-                // rotate ARM and RA to measure Ex for all AUT radii
-                controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
 
                 int iMeasurements = 0;
                 arm_pos = encoder.getPosition(1);
-                ra_pos = encoder.getPosition(2) - 240.5566;
-                while (iMeasurements < ( 360.0 / Globals.STEP_ANGLE) )
+                ra_pos = encoder.getPosition(2);
+                aut_pos = encoder.getPosition(3);
+
+                // rotate ARM and RA to measure Ex for all AUT radii
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
+
+                while (!controller1.isIdle())
                 {
-                    if (ra_pos / Globals.STEP_ANGLE == iMeasurements)
-                    {
-                        double ra_pos1 = encoder.getPosition(2);
-                        double aut_pos1 = encoder.getPosition(3);
-                        double[] data = vna.OutputFinalData();
-                        ra_pos = (encoder.getPosition(2) - ra_pos1) / 2.0;
-                        aut_pos = (encoder.getPosition(3) - aut_pos1) / 2.0;
-                        
-                        saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
-                        iMeasurements++;
-                    }
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+                    // Get second position measurement, calculate mean position
+                    ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Save measurement
+                    saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    iMeasurements++;
                 }
 
-                controller1.waitForIdle();
-
                 // Turn RA to face Ey
-                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
                 facingX = false;
 
                 // Rotate AUT and RA back 360 degrees, measuring Ey
                 controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
-                
-                double r = 360.0 / Globals.STEP_ANGLE;
-                iMeasurements = (int)Math.Ceiling(r);
-                arm_pos = encoder.getPosition(1);
-                ra_pos = encoder.getPosition(2) - 240.5566;
-                
-                while (iMeasurements > 0)
+
+                while (!controller1.isIdle())
                 {
-                    if (ra_pos / Globals.STEP_ANGLE == iMeasurements)
-                    {
-                        double ra_pos1 = encoder.getPosition(2);
-                        double aut_pos1 = encoder.getPosition(3);
-                        double[] data = vna.OutputFinalData();
-                        ra_pos = (encoder.getPosition(2) - ra_pos1) / 2.0;
-                        aut_pos = (encoder.getPosition(3) - aut_pos1) / 2.0;
-                        saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
-                        iMeasurements--;
-                    }
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+                    // Get second position measurement
+                    ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Save measurement
+                    saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    iMeasurements++;
                 }
-                controller1.waitForIdle();
                 
                 // Turn RA back to face Ex
                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
@@ -783,7 +780,7 @@ namespace Gui
 
                 // Sweep arm outwards, and ra to maintain polarity with Ex
                 controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
-                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Non-Blocking sequence run
+                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Blocking sequence run
 
                 // Wait settling time for arm movement
                 Thread.Sleep(2000);
@@ -940,26 +937,28 @@ namespace Gui
         {
             int encoder_id = 0;
             Controller c;
+
+            // Get encoder ID: Arm = 1, RA = 2, AUT = 3
             if (controller_id == 1)
             {
                 c = controller1;
-                if (motor_id == 1)
+                if (motor_id == 1) // AUT
                 {
-                    encoder_id = 1;
+                    encoder_id = 3;
                 }
-                else if (motor_id == 2)
+                else if (motor_id == 2) // RA
                 {
                     encoder_id = 2;
                 }
             }
-            else
+            else // Arm
             {
                 c = controller2;
-                encoder_id = 3;
+                encoder_id = 1;
             }
             // Configure motor speed (Arm motor needs to be slow, others can be fast)
             double v, vs, t;
-            if (controller_id == 1 && motor_id == 1)
+            if (controller_id == 2 && motor_id == 1)
             {
                 // Set arm motor speed/accel to the slow defaults
                 v = Globals.VEL;
@@ -975,7 +974,7 @@ namespace Gui
             }
             c.SetSpeed(motor_id, v, vs, t);
 
-            double current_pos = encoder.getPosition(motor_id);
+            double current_pos = encoder.getPosition(encoder_id);
             home_angle = 0.0;
 
             while (!bwControlSystem.CancellationPending && Math.Abs(current_pos - home_angle) > Globals.ANGLE_ERROR_MAX)
@@ -983,13 +982,28 @@ namespace Gui
                 double inc_amount = Math.Round(current_pos - home_angle, 2);
                 if (inc_amount > 180.0)
                 {
-                    inc_amount -= 360.0;
+                    inc_amount = 360 - inc_amount;
+                    //inc_amount = -1;
+                    //inc_amount = 
                 }
+                else
+                {
+                    inc_amount *= -1;
+                }
+                // Ensure inc is only 2 decimals so controller can handle it
+                inc_amount = Math.Round(inc_amount, 2);
                 // Move motor, blocks until the motor stops moving
                 c.IncMotor(motor_id, inc_amount, true);
+                
+                // Arm needs to wait settling time
+                if (encoder_id == 1)
+                {
+                    Thread.Sleep(5000);
+                }
 
                 // Get new motor position
-                current_pos = encoder.getPosition(motor_id);
+                current_pos = encoder.getPosition(encoder_id);
+                if (current_pos == 360.0) current_pos = 0;
             }
 
         }

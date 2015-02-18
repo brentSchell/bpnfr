@@ -30,7 +30,7 @@ namespace Gui
     public static class Globals
     {
         public static String SERIAL_LOG_FILE = "serial.log";
-        public static bool LOGGING = true;
+        public static bool LOGGING = false;
         public static string FILENAME;
 
         // Connection Flags

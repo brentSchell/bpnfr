@@ -300,21 +300,26 @@ namespace Gui
             return true;
         }
 
+        public bool isIdle()
+        {
+            bool idle = false;
+            string command = "R1";
+            send(command);
+            string response = recv(">");
+            if (response.Contains("System status:\r\n          Idle"))
+            {
+                idle = true;
+            }
+            return idle;
+        }
+
         public void waitForIdle()
         {
             // polls motor controller, waiting for a sequence to finish
             // blocks until finished
-            // %% add timeout?
-            bool idle = false;
-            while (!idle)
+            while (!this.isIdle())
             {
-                string command = "R1";
-                send(command);
-                string response = recv(">");
-                if (response.Contains("System status:\r\n          Idle"))
-                {
-                    idle = true;
-                }
+                
             }
         }
 
@@ -566,7 +571,7 @@ namespace Gui
             seq += "D1 360.0 \r";               // set aut step angle
             seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
             seq += "VS1 " + Globals.START_VEL + "\r";
-            seq += "H1 - \r";                               // Inward %%                
+            seq += "H1 + \r";                               // Inward %%                
             seq += "T1 " + Globals.ACCEL + "\r";
 
             seq += "D2 360.0 \r";               // set ra step angle
@@ -586,9 +591,9 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 360.0 \r";               // set aut step angle
-            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
+            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
             seq += "VS1 " + Globals.START_VEL + "\r";
-            seq += "H1 + \r";                               // Inward %%                
+            seq += "H1 - \r";                               // Inward %%                
             seq += "T1 " + Globals.ACCEL + "\r";
 
             seq += "D2 360.0 \r";               // set ra step angle
