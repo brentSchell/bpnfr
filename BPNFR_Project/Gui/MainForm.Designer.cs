@@ -82,6 +82,21 @@
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.pbImage = new System.Windows.Forms.PictureBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.cmbBoxFFPowerPhiCuts = new System.Windows.Forms.ComboBox();
+            this.cmbBoxNFPowerLinear = new System.Windows.Forms.ComboBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.txtBoxGridResolution = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txtBoxDTheta = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtBoxPhis = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.btnStartMatlab = new System.Windows.Forms.Button();
             this.indicatorCont1Connection = new System.Windows.Forms.Button();
@@ -95,21 +110,7 @@
             this.lblMainInfo = new System.Windows.Forms.Label();
             this.lblStat = new System.Windows.Forms.Label();
             this.lblSysState = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.txtBoxPhis = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.txtBoxDTheta = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.txtBoxGridResolution = new System.Windows.Forms.TextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.cmbBoxNFPowerLinear = new System.Windows.Forms.ComboBox();
-            this.cmbBoxFFPowerPhiCuts = new System.Windows.Forms.ComboBox();
+            this.tabCalibration = new System.Windows.Forms.TabPage();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -140,6 +141,7 @@
             this.tabControl1.Controls.Add(this.tabConfiguration);
             this.tabControl1.Controls.Add(this.tabOperation);
             this.tabControl1.Controls.Add(this.tabResults);
+            this.tabControl1.Controls.Add(this.tabCalibration);
             this.tabControl1.Location = new System.Drawing.Point(17, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -699,6 +701,152 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Calculate Far-Field";
             // 
+            // cmbBoxFFPowerPhiCuts
+            // 
+            this.cmbBoxFFPowerPhiCuts.FormattingEnabled = true;
+            this.cmbBoxFFPowerPhiCuts.Items.AddRange(new object[] {
+            "True",
+            "False"});
+            this.cmbBoxFFPowerPhiCuts.Location = new System.Drawing.Point(187, 227);
+            this.cmbBoxFFPowerPhiCuts.Name = "cmbBoxFFPowerPhiCuts";
+            this.cmbBoxFFPowerPhiCuts.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxFFPowerPhiCuts.TabIndex = 37;
+            // 
+            // cmbBoxNFPowerLinear
+            // 
+            this.cmbBoxNFPowerLinear.FormattingEnabled = true;
+            this.cmbBoxNFPowerLinear.Items.AddRange(new object[] {
+            "True",
+            "False"});
+            this.cmbBoxNFPowerLinear.Location = new System.Drawing.Point(187, 191);
+            this.cmbBoxNFPowerLinear.Name = "cmbBoxNFPowerLinear";
+            this.cmbBoxNFPowerLinear.Size = new System.Drawing.Size(121, 21);
+            this.cmbBoxNFPowerLinear.TabIndex = 36;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(6, 246);
+            this.label16.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(68, 13);
+            this.label16.TabIndex = 35;
+            this.label16.Text = "(Explanation)";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(6, 230);
+            this.label17.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(94, 13);
+            this.label17.TabIndex = 33;
+            this.label17.Text = "FF Power Phi Cuts";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(6, 207);
+            this.label14.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(68, 13);
+            this.label14.TabIndex = 32;
+            this.label14.Text = "(Explanation)";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(6, 191);
+            this.label15.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(86, 13);
+            this.label15.TabIndex = 30;
+            this.label15.Text = "NF Power Linear";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(6, 166);
+            this.label12.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(68, 13);
+            this.label12.TabIndex = 29;
+            this.label12.Text = "(Explanation)";
+            // 
+            // txtBoxGridResolution
+            // 
+            this.txtBoxGridResolution.Location = new System.Drawing.Point(187, 143);
+            this.txtBoxGridResolution.Name = "txtBoxGridResolution";
+            this.txtBoxGridResolution.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxGridResolution.TabIndex = 28;
+            this.txtBoxGridResolution.Text = "0.5";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(6, 150);
+            this.label13.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(82, 13);
+            this.label13.TabIndex = 27;
+            this.label13.Text = "Grid Resolution:";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(6, 83);
+            this.label10.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(68, 13);
+            this.label10.TabIndex = 26;
+            this.label10.Text = "(Explanation)";
+            // 
+            // txtBoxDTheta
+            // 
+            this.txtBoxDTheta.Location = new System.Drawing.Point(187, 60);
+            this.txtBoxDTheta.Name = "txtBoxDTheta";
+            this.txtBoxDTheta.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxDTheta.TabIndex = 25;
+            this.txtBoxDTheta.Text = "0.1";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 67);
+            this.label11.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(66, 13);
+            this.label11.TabIndex = 24;
+            this.label11.Text = "Delta Theta:";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 122);
+            this.label9.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(247, 13);
+            this.label9.TabIndex = 23;
+            this.label9.Text = "Enter as comma separated degree-values, i.e: 0,45";
+            // 
+            // txtBoxPhis
+            // 
+            this.txtBoxPhis.Location = new System.Drawing.Point(187, 99);
+            this.txtBoxPhis.Name = "txtBoxPhis";
+            this.txtBoxPhis.Size = new System.Drawing.Size(121, 20);
+            this.txtBoxPhis.TabIndex = 22;
+            this.txtBoxPhis.Text = "0,45";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 106);
+            this.label8.MaximumSize = new System.Drawing.Size(250, 1000);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 13);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "Phi-Cuts:";
+            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -835,151 +983,14 @@
             this.lblSysState.TabIndex = 23;
             this.lblSysState.Text = "Unconfigured";
             // 
-            // label8
+            // tabCalibration
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 106);
-            this.label8.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(49, 13);
-            this.label8.TabIndex = 21;
-            this.label8.Text = "Phi-Cuts:";
-            // 
-            // txtBoxPhis
-            // 
-            this.txtBoxPhis.Location = new System.Drawing.Point(187, 99);
-            this.txtBoxPhis.Name = "txtBoxPhis";
-            this.txtBoxPhis.Size = new System.Drawing.Size(121, 20);
-            this.txtBoxPhis.TabIndex = 22;
-            this.txtBoxPhis.Text = "0,45";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(6, 122);
-            this.label9.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(247, 13);
-            this.label9.TabIndex = 23;
-            this.label9.Text = "Enter as comma separated degree-values, i.e: 0,45";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(6, 83);
-            this.label10.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(68, 13);
-            this.label10.TabIndex = 26;
-            this.label10.Text = "(Explanation)";
-            // 
-            // txtBoxDTheta
-            // 
-            this.txtBoxDTheta.Location = new System.Drawing.Point(187, 60);
-            this.txtBoxDTheta.Name = "txtBoxDTheta";
-            this.txtBoxDTheta.Size = new System.Drawing.Size(121, 20);
-            this.txtBoxDTheta.TabIndex = 25;
-            this.txtBoxDTheta.Text = "0.1";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(6, 67);
-            this.label11.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(66, 13);
-            this.label11.TabIndex = 24;
-            this.label11.Text = "Delta Theta:";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(6, 166);
-            this.label12.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(68, 13);
-            this.label12.TabIndex = 29;
-            this.label12.Text = "(Explanation)";
-            // 
-            // txtBoxGridResolution
-            // 
-            this.txtBoxGridResolution.Location = new System.Drawing.Point(187, 143);
-            this.txtBoxGridResolution.Name = "txtBoxGridResolution";
-            this.txtBoxGridResolution.Size = new System.Drawing.Size(121, 20);
-            this.txtBoxGridResolution.TabIndex = 28;
-            this.txtBoxGridResolution.Text = "0.5";
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(6, 150);
-            this.label13.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(82, 13);
-            this.label13.TabIndex = 27;
-            this.label13.Text = "Grid Resolution:";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(6, 207);
-            this.label14.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(68, 13);
-            this.label14.TabIndex = 32;
-            this.label14.Text = "(Explanation)";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(6, 191);
-            this.label15.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(86, 13);
-            this.label15.TabIndex = 30;
-            this.label15.Text = "NF Power Linear";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(6, 246);
-            this.label16.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(68, 13);
-            this.label16.TabIndex = 35;
-            this.label16.Text = "(Explanation)";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(6, 230);
-            this.label17.MaximumSize = new System.Drawing.Size(250, 1000);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(94, 13);
-            this.label17.TabIndex = 33;
-            this.label17.Text = "FF Power Phi Cuts";
-            // 
-            // cmbBoxNFPowerLinear
-            // 
-            this.cmbBoxNFPowerLinear.FormattingEnabled = true;
-            this.cmbBoxNFPowerLinear.Items.AddRange(new object[] {
-            "True",
-            "False"});
-            this.cmbBoxNFPowerLinear.Location = new System.Drawing.Point(187, 191);
-            this.cmbBoxNFPowerLinear.Name = "cmbBoxNFPowerLinear";
-            this.cmbBoxNFPowerLinear.Size = new System.Drawing.Size(121, 21);
-            this.cmbBoxNFPowerLinear.TabIndex = 36;
-            // 
-            // cmbBoxFFPowerPhiCuts
-            // 
-            this.cmbBoxFFPowerPhiCuts.FormattingEnabled = true;
-            this.cmbBoxFFPowerPhiCuts.Items.AddRange(new object[] {
-            "True",
-            "False"});
-            this.cmbBoxFFPowerPhiCuts.Location = new System.Drawing.Point(187, 227);
-            this.cmbBoxFFPowerPhiCuts.Name = "cmbBoxFFPowerPhiCuts";
-            this.cmbBoxFFPowerPhiCuts.Size = new System.Drawing.Size(121, 21);
-            this.cmbBoxFFPowerPhiCuts.TabIndex = 37;
+            this.tabCalibration.Location = new System.Drawing.Point(4, 22);
+            this.tabCalibration.Name = "tabCalibration";
+            this.tabCalibration.Size = new System.Drawing.Size(796, 350);
+            this.tabCalibration.TabIndex = 3;
+            this.tabCalibration.Text = "Calibration";
+            this.tabCalibration.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -1112,6 +1123,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txtBoxPhis;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TabPage tabCalibration;
     }
 }
 

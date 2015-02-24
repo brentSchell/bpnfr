@@ -281,23 +281,32 @@ namespace Gui
 
         public bool runSequence(int seq_num)
         {
-            // Runs a sequence program, returns immediately
-            string command = "run " + seq_num;
-            send(command);
-            string response = recv(">");
-            return true;
+            bool sequenceStarted = false;
+            int tries = 0;
+            while (!sequenceStarted && tries < 10)
+            {
+                // Runs a sequence program, returns immediately
+                string command = "run " + seq_num;
+                send(command);
+                string response = recv(">");
+
+                string expected = "run " + seq_num + "\r\n0";
+                if (response == expected)
+                {
+                    sequenceStarted = true;
+                }
+
+                tries++;
+            }
+            return sequenceStarted;
         }
         
         public bool runSequenceBlocking(int seq_num)
         {
             // Runs a sequence program, returns when it's done
-            string command = "run " + seq_num;
-            send(command);
-            string response = recv(">");
-
+            bool res = runSequence(seq_num);
             waitForIdle();
-
-            return true;
+            return res;
         }
 
         public bool isIdle()
@@ -591,7 +600,7 @@ namespace Gui
             string seq = "Seq " + seq_id + "\r";
 
             seq += "D1 360.0 \r";               // set aut step angle
-            seq += "V1 " + Globals.FAST_VEL + "\r";              // set arm motor speed
+            seq += "V1 " + Globals.VEL + "\r";              // set arm motor speed
             seq += "VS1 " + Globals.START_VEL + "\r";
             seq += "H1 - \r";                               // Inward %%                
             seq += "T1 " + Globals.ACCEL + "\r";
@@ -603,6 +612,7 @@ namespace Gui
             seq += "T2 " + Globals.ACCEL + "\r";
 
             seq += "INCC";  // move both motors at once
+
             seq += "\r\r";
 
             return SendSequence(seq, seq_id);

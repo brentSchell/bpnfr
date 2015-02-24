@@ -77,7 +77,7 @@ namespace Gui
         public static int SEQ_STEP_RA_INWARD = 17;
 
         // Motor default speeds
-        public static double VEL = 500;
+        public static double VEL = 4000;
         public static double FAST_VEL = 5000;
 
         public static double START_VEL = 10;       

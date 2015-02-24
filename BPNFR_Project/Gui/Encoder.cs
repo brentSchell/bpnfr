@@ -31,36 +31,43 @@ namespace Gui
         // reads position of encoder, -1 if error
         public double getPosition(int id)
         {
-            // Clear buffer
-            string rem = arduino_port.ReadExisting();
-            
-            //string msg = id + "\n";
-            char command = (char)(id + '0');
-            arduino_port.NewLine = "\n";
-            arduino_port.WriteLine(command + "");
-            
-            string resp = recv();
-            
-            string[] tokens = resp.Split(',');
+            int tries = 2;  // give encoders 2 tries to get position right
+            bool success = false;
             double pos = -1;
-            for (int i = 0; i < tokens.Length && pos == -1; i++)
+
+            while (!success && tries > 0)
             {
-                if (tokens[i].Equals(id + "") )
+                // Clear buffer
+                string rem = arduino_port.ReadExisting();
+
+                //string msg = id + "\n";
+                char command = (char)(id + '0');
+                arduino_port.NewLine = "\n";
+                arduino_port.WriteLine(command + "");
+
+                string resp = recv();
+
+                string[] tokens = resp.Split(',');
+                for (int i = 0; i < tokens.Length && pos == -1; i++)
                 {
-                    pos = Double.Parse(tokens[i + 1]);
+                    if (tokens[i].Equals(id + ""))
+                    {
+                        pos = Double.Parse(tokens[i + 1]);
+                    }
                 }
-            }
-            if (pos != -1)
-            {
-                // convert value from 0 to 4096 to 0.0 to 360.0 degrees
-                pos = pos * 360.0 / 4096.0;
+                if (pos != -1)
+                {
+                    // convert value from 0 to 4096 to 0.0 to 360.0 degrees
+                    pos = pos * 360.0 / 4096.0;
 
-                if (id == 2) {  // RA is mounted opposite others, needs to be reversed
-                    pos = 360.0 - pos;
+                    if (id == 2)
+                    {  // RA is mounted opposite others, needs to be reversed
+                        pos = 360.0 - pos;
+                    }
+                    success = true;
                 }
+                tries--;
             }
-
-            
             return pos;
         }
         

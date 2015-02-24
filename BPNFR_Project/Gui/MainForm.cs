@@ -44,6 +44,9 @@ namespace Gui
             cmbBoxMeasurementMode.SelectedIndex = 0; // Discrete mode default
             cmbBoxFFPowerPhiCuts.SelectedIndex = 0; // True
             cmbBoxNFPowerLinear.SelectedIndex = 0; // True
+            cmbBoxCont1.SelectedValue = "COM11";
+            cmbBoxCont2.SelectedValue = "COM13";
+            cmbBoxEncoder.SelectedValue = "COM10";
 
             // Init system state
             Globals.SYS_STATE = State.Unconfigured;
@@ -68,7 +71,10 @@ namespace Gui
             if (connectingEncoder && !Globals.FLAG_ENCODER_CONNECTED)
             {
                 arduino_port = new SerialPort();
-                arduino_port.PortName = arduino_com_port; // TODO get these from a list
+                // %%temp
+                //arduino_port.PortName = arduino_com_port;
+                arduino_port.PortName = "COM10";
+                
                 arduino_port.BaudRate = 115200;
                 arduino_port.WriteTimeout = 2000;
                 arduino_port.ReadTimeout = 2000;
@@ -90,7 +96,9 @@ namespace Gui
             if (connectingCont1 && !Globals.FLAG_CONT1_CONNECTED)
             {
                 cont1_port = new SerialPort();
-                cont1_port.PortName = cont1_com_port;
+                // %% temp
+                //cont1_port.PortName = cont1_com_port;
+                cont1_port.PortName = "COM11";
                 cont1_port.BaudRate = 9600;
                 cont1_port.WriteTimeout = 2000;
                 cont1_port.ReadTimeout = 20000;
@@ -113,7 +121,9 @@ namespace Gui
             if (connectingCont2 && !Globals.FLAG_CONT2_CONNECTED)
             {
                 cont2_port = new SerialPort();
-                cont2_port.PortName = cont2_com_port;
+                // %% temp
+                //cont2_port.PortName = cont2_com_port;
+                cont2_port.PortName = "COM13";
                 cont2_port.BaudRate = 9600;
                 cont2_port.WriteTimeout = 100;
                 cont2_port.ReadTimeout = 1000;
@@ -497,6 +507,7 @@ namespace Gui
 
             // Store important variables to globals, to be used by motors
             Globals.SWEEP_ANGLE = Math.Round(sweep_angle,2); // %% Round to 2 decimal places
+            max_step_angle *= 0.9;
             Globals.STEP_ANGLE = Math.Round(max_step_angle,2); // %% Round to 2 decimal places
             Globals.CRITICAL_ANGLE = Math.Round(critical_angle,2);
             Globals.SCAN_AREA_RADIUS = Math.Round(sa_radius,2);
@@ -692,23 +703,30 @@ namespace Gui
         {
             if (Globals.SYS_STATE == State.Zeroing) // Zero System
             {
-                runZeroMotor(1, 2, 0.0);    // ra
-                runZeroMotor(2, 1, 0.0);  // arm
-                runZeroMotor(1, 1, 0.0);    // aut
+                bool res;
+                res = runZeroMotor(1, 2, 0.0);    // ra
+                if (res) res = runZeroMotor(2, 1, 0.0);  // arm
+                if (res) res = runZeroMotor(1, 1, 0.0);    // aut
 
+                if (res)
+                {
+                    MessageBox.Show("Calibration is complete.");
+                }
+                else
+                {
+                    MessageBox.Show("Calibration failed. Unable to read from encoders.");
+                }
             }
             else if (Globals.MEASUREMENT_MODE == 1) // Continuous
             {
-                runContinuousSystem();
-                //control_system_thread = new Thread(control_system_worker.runDiscreteSystem2); // Discrete system 2 (AUT does majority of moving)
+                //runContinuousSystem();
+               runContinuousSystem2();
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
-                runDiscreteSystem5();
-
+                runDiscreteSystem5();    
             }
 
-            MessageBox.Show("Scan is completed.");
 
         }
 
@@ -737,7 +755,7 @@ namespace Gui
                 // rotate ARM and RA to measure Ex for all AUT radii
                 controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
 
-                while (!controller1.isIdle())
+                while (!controller1.isIdle() && !bwControlSystem.CancellationPending)
                 {
                     // Get position
                     double ra_pos1 = encoder.getPosition(2);
@@ -752,20 +770,24 @@ namespace Gui
                     iMeasurements++;
                 }
 
-                // Turn RA to face Ey
-                 controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
-                facingX = false;
+                if (!bwControlSystem.CancellationPending)
+                {
+                    // Turn RA to face Ey
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    facingX = false;
 
-                // Rotate AUT and RA back 360 degrees, measuring Ey
-                controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
+                    // Rotate AUT and RA back 360 degrees, measuring Ey
+                    controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
+                }
 
-                while (!controller1.isIdle())
+                while (!controller1.isIdle() && !bwControlSystem.CancellationPending)
                 {
                     // Get position
                     double ra_pos1 = encoder.getPosition(2);
                     double aut_pos1 = encoder.getPosition(3);
                     // Get VNA data
                     double[] data = vna.OutputFinalData();
+
                     // Get second position measurement
                     ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
                     aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
@@ -773,19 +795,134 @@ namespace Gui
                     saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
                     iMeasurements++;
                 }
-                
-                // Turn RA back to face Ex
-                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
-                facingX = true;
 
-                // Sweep arm outwards, and ra to maintain polarity with Ex
-                controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
-                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Blocking sequence run
+                if (!bwControlSystem.CancellationPending)
+                {
 
-                // Wait settling time for arm movement
-                Thread.Sleep(2000);
+                    // Turn RA back to face Ex
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    facingX = true;
+
+                    // Sweep arm outwards, and ra to maintain polarity with Ex
+                    controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Blocking sequence run
+
+                    // Wait settling time for arm movement
+                    Thread.Sleep(2000);
+                    bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
+                }
             }
 
+            if (bwControlSystem.CancellationPending)
+            {
+                controller1.EStop();
+                controller2.EStop();
+            }
+
+        }
+
+        public void runContinuousSystem2()
+        {
+            /* 
+             * Worker thread method to perform the continuous control system
+             * Uses system parameters stored in "Globals" for the step and sweep angles  
+             */
+            bool facingX = true;
+            double aut_pos = 0.0;
+            double ra_pos = 0.0;
+            double arm_pos = 0.0;
+
+            List<Measurement> list_one_radius;
+            for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
+            {
+                list_one_radius = new List<Measurement>();
+                int iMeasurements = 0;
+                arm_pos = encoder.getPosition(1);
+                ra_pos = encoder.getPosition(2);
+                aut_pos = encoder.getPosition(3);
+
+                // rotate ARM and RA to measure Ex for all AUT radii
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
+                DateTime start_time = DateTime.Now;
+                TimeSpan total_time = TimeSpan.Zero;
+                while (!bwControlSystem.CancellationPending && total_time.Seconds < 30)
+                {
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+                    //double[] data = { 0, 0 };
+                    // Get second position measurement, calculate mean position
+                    ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Save measurement
+                    saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //list_one_radius.Add(m);
+                    //iMeasurements++;
+                    Thread.Sleep(10);
+                    total_time = DateTime.Now - start_time;
+                }
+                controller1.waitForIdle();
+                
+                if (!bwControlSystem.CancellationPending)
+                {
+                    // Turn RA to face Ey
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    facingX = false;
+
+                    // Rotate AUT and RA back 360 degrees, measuring Ey
+                    controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
+                }
+
+                start_time = DateTime.Now;
+                total_time = TimeSpan.Zero;
+                while (!bwControlSystem.CancellationPending && total_time.Seconds < 30)
+                {
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+
+                    // Get second position measurement
+                    ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Store measurement
+                    saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //list_one_radius.Add(m);
+                    //iMeasurements++;
+
+                    Thread.Sleep(10);
+                    total_time = DateTime.Now - start_time;
+
+                }
+                controller1.waitForIdle();
+
+                if (!bwControlSystem.CancellationPending)
+                {
+
+                    // Turn RA back to face Ex
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    facingX = true;
+
+                    // Sweep arm outwards, and ra to maintain polarity with Ex
+                    controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD); // Note: Blocking sequence run
+
+                    // Dump measurement list to file
+                    /*
+                    for (int im = 0; im < list_one_radius.Count; im++)
+                    {
+                        list_one_radius[im].appendToFile(Globals.FILENAME);
+                    }
+                    */
+                    // Wait settling time for arm movement
+                    Thread.Sleep(2000);
+                }
+            }
         }
         
         private void runDiscreteSystem5()
@@ -810,9 +947,9 @@ namespace Gui
                 {
                     
                     // Take measurement
-                    aut_pos = encoder.getPosition(3);
-                    arm_pos = encoder.getPosition(1);
-                    ra_pos = encoder.getPosition(2);
+                    //aut_pos = encoder.getPosition(3);
+                    //arm_pos = encoder.getPosition(1);
+                    //ra_pos = encoder.getPosition(2);
                     double[] data = vna.OutputFinalData();
                     saveMeasurement(arm_deg, ra_deg, aut_deg, facingX, data[0], data[1]);
 
@@ -822,9 +959,12 @@ namespace Gui
                     aut_deg += Globals.STEP_ANGLE;
                 }
 
-                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
-                ra_deg += 90.0;
-                facingX = false;
+                if (!bwControlSystem.CancellationPending)
+                {
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
+                    ra_deg -= 90.0;
+                    facingX = false;
+                }
 
                 // Rotate AUT Inwards, collecting points along the same radius for Ey
                 while (!bwControlSystem.CancellationPending && aut_deg > 0.0)
@@ -843,26 +983,35 @@ namespace Gui
                     aut_deg -= Globals.STEP_ANGLE;
                 }
 
-                // Turn RA to face Ex again
-                controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_INWARD);
-                ra_deg -= 90.0;
-                facingX = true;
+                if (!bwControlSystem.CancellationPending)
+                {
+                    // Turn RA to face Ex again
+                    controller1.runSequenceBlocking(Globals.SEQ_TURN_RA_90_OUTWARD);
+                    ra_deg += 90.0;
+                    facingX = true;
 
-                // Step arm out, and ra to match
-                controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
-                ra_deg -= Globals.STEP_ANGLE;
-                controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD);
-                arm_deg += Globals.STEP_ANGLE;
 
-                // Wait Settling time
-                Thread.Sleep(5000);
+                    // Step arm out, and ra to match
+                    controller1.runSequence(Globals.SEQ_STEP_RA_INWARD);
+                    ra_deg -= Globals.STEP_ANGLE;
+                    controller2.runSequenceBlocking(Globals.SEQ_STEP_ARM_OUTWARD);
+                    arm_deg += Globals.STEP_ANGLE;
 
-                bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
+                    // Wait Settling time
+                    Thread.Sleep(5000);
+
+                    bwControlSystem.ReportProgress((int)(100.0 * arm_deg / Globals.SWEEP_ANGLE));
+                }
             }
 
             if (!bwControlSystem.CancellationPending)
             {
                 bwControlSystem.ReportProgress(100);
+            }
+            else
+            {
+                controller1.EStop();
+                controller2.EStop();
             }
 
         }
@@ -933,7 +1082,7 @@ namespace Gui
 
         }
 
-        private void runZeroMotor(int controller_id, int motor_id, double home_angle)
+        private bool runZeroMotor(int controller_id, int motor_id, double home_angle)
         {
             int encoder_id = 0;
             Controller c;
@@ -961,9 +1110,9 @@ namespace Gui
             if (controller_id == 2 && motor_id == 1)
             {
                 // Set arm motor speed/accel to the slow defaults
-                v = Globals.VEL;
-                vs = Globals.START_VEL;
-                t = Globals.ACCEL;
+                v = Globals.ARM_VEL;
+                vs = Globals.ARM_START_VEL;
+                t = Globals.ARM_ACCEL;
             }
             else
             {
@@ -977,6 +1126,9 @@ namespace Gui
             double current_pos = encoder.getPosition(encoder_id);
             home_angle = 0.0;
 
+            if (current_pos == -1) {
+                return false;
+            }
             while (!bwControlSystem.CancellationPending && Math.Abs(current_pos - home_angle) > Globals.ANGLE_ERROR_MAX)
             {
                 double inc_amount = Math.Round(current_pos - home_angle, 2);
@@ -1004,7 +1156,13 @@ namespace Gui
                 // Get new motor position
                 current_pos = encoder.getPosition(encoder_id);
                 if (current_pos == 360.0) current_pos = 0;
+
+                if (current_pos == -1)
+                {
+                    return false;
+                }
             }
+            return true;
 
         }
 
@@ -1073,11 +1231,14 @@ namespace Gui
             pbScan.Value = 0;
 
             // If control system was cancelled before completing, go back to unconfigured state
-            if (e.Cancelled)
+            if (bwControlSystem.CancellationPending ||  e.Cancelled)
             {
+                controller1.EStop();
+                controller2.EStop();
                 MessageBox.Show("Scan was terminated successfully");
                 Globals.SYS_STATE = State.Unconfigured;
                 lblSysState.Text = "Unconfigured";
+                
             }
             // Else control system completed successfully
             else
@@ -1210,7 +1371,7 @@ namespace Gui
         {
             string matlab_exe = Directory.GetCurrentDirectory() + "\\MATLAB\\nf_ff_transformation.exe";
             string settings_file = Directory.GetCurrentDirectory() + "\\MATLAB\\settings.txt";
-            string data_file = Directory.GetCurrentDirectory() + "\\MATLAB\\first_test_data.txt";
+            string data_file = Directory.GetCurrentDirectory() + "\\res2.txt";
             Start_MATLAB_Compiler_EXE(matlab_exe, settings_file, data_file);
 
         }

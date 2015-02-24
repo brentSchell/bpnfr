@@ -5,7 +5,7 @@ int CS_ARM = 4;
 int CS_RA = 3;
 int CS_AUT = 5;
 int CS = 3; 
-int MAX_TRIES = 10;
+int MAX_TRIES = 50;
 int MEASUREMENT_COUNT = 1;
 uint16_t ABSposition_last = 0;
 uint8_t temp[2];
@@ -34,7 +34,11 @@ void setup()
   delay(2000);
   SPI.end();
   if (debug) {
-    Serial.println("started");
+    Serial.println("SPI and Serial Configured");  
+  }
+  resetEncoders();
+  if (debug) {
+    Serial.println("Started");
   }
 }
 
@@ -44,21 +48,61 @@ void loop()
   int stat = 0;
   double start_time;
   
-  if (Serial.available()) {
-    start_time = micros();
-     command = Serial.read();      
+  // Wait for an incoming command
+  while (!Serial.available()) {
+  }
+  command = Serial.read();      
+  if (debug) {
+    Serial.print("Got command");
+    Serial.println(command,HEX); 
+  }
+   
+  if (command == 0x31) { // ASCII '1'
+    if (debug) {
+      Serial.println("Getting arm position");  
+    }
+    CS = CS_ARM;
+    // digitalWrite(CS_ARM,LOW);
+     int pos = getPosition();
+   //  digitalWrite(CS_ARM,HIGH);
+     
+     // Send response back to master    
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(pos,DEC);
+     Serial.write("\n");
+   } 
+   else if (command == 0x32) { //ASCII '2'
      if (debug) {
-       Serial.print("Got command");
-       Serial.println(command,HEX); 
-     }
-   }   
-   if (command == 0x31) { // ASCII '1'
-     CS = CS_ARM;  
-   } else if (command == 0x32) { //ASCII '2'
-     CS = CS_RA;
-   } else if (command == 0x33) { //ASCII '3'
+      Serial.println("Getting arm position");  
+    }
+    CS = CS_RA;
+    // digitalWrite(CS_RA,LOW);
+     int pos = getPosition();
+    // digitalWrite(CS_RA,HIGH);
+     
+     // Send response back to master    
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(pos,DEC);
+     Serial.write("\n");
+   } 
+   else if (command == 0x33) { //ASCII '3', get AUT Position
+     if (debug) {
+      Serial.println("Getting arm position");  
+    }
      CS = CS_AUT;
-   } else if (command == 0x34) { //ASCII '4'
+     //digitalWrite(CS_AUT,LOW);
+     int pos = getPosition();
+     //digitalWrite(CS_AUT,HIGH);
+     
+     // Send response back to master    
+     Serial.write(command);
+     Serial.write(",");
+     Serial.print(pos,DEC);
+     Serial.write("\n");
+   } 
+   else if (command == 0x34) { //ASCII '4'
      stat = getStatus();
      
      // Send response back to master
@@ -69,15 +113,22 @@ void loop()
 
      CS = -1;
    } else if (command == 0x35) { // Set Encoder 1 (ARM) Zero ASCII '5'
-     uint8_t r = setZero(CS_ARM);  
+    Serial.println("Starting zeroing Arm...");
+    digitalWrite(CS_ARM,LOW);
+    uint8_t r = setZero(CS_ARM);  
+    digitalWrite(CS_ARM,HIGH);
+
      // Replies with "command, 0x80" if success 
      Serial.write(command);
      Serial.write(",");
      Serial.print(r,HEX);
      Serial.write("\n");
-     CS = -1;
    } else if (command == 0x36) { // Set Encoder 2 (RA) Zero  ASCII '6'
+     Serial.println("Starting zeroing Arm...");
+     digitalWrite(CS_RA,LOW);
      uint8_t r = setZero(CS_RA);     
+     digitalWrite(CS_RA,HIGH);
+
      // Replies with "command, 0x80" if success 
      Serial.write(command);
      Serial.write(",");
@@ -85,7 +136,11 @@ void loop()
      Serial.write("\n");
      CS = -1;
    } else if (command == 0x37) { // Set Encoder 3 (AUT) Zero ASCII '7'
+     Serial.println("Starting zeroing AUT...");
+     digitalWrite(CS_AUT,LOW);
      uint8_t r = setZero(CS_AUT); 
+     digitalWrite(CS_AUT,HIGH);
+
      // Replies with "command, 0x80" if success 
      Serial.write(command);
      Serial.write(",");
@@ -97,44 +152,77 @@ void loop()
      CS = -1;  
    }
    
-   if (CS != -1) {
-     float pos_avg = 0;
-     int pos = 0;
-     int fail_count = 0;
-     for (int i=0; i<MEASUREMENT_COUNT && fail_count<MAX_TRIES; i++) { // get 10 measurements, or 10 fails then stop
-        pos = getPosition();
-        if (pos == -1) { // encoder error, try again
-          fail_count++; 
-          i--;
-        } else {
-          pos_avg += pos;          
-        }
-        if (debug) Serial.println(pos,DEC); 
-     }
-     if (fail_count == MAX_TRIES) {
-       pos_avg = -1;
-     } else {
-       pos_avg /= (float)MEASUREMENT_COUNT;
-     }
-     if (debug) {
-       Serial.print("Average: " );
-       Serial.println(pos_avg,DEC); 
-     }
-     
-     // Send response back to master    
-     Serial.write(command);
-     Serial.write(",");
-     Serial.print((int)pos_avg,DEC);
-     Serial.write("\n");
-     
-     // Send time delay back 
-     /*
-     double stop_time = micros() - start_time;
-     Serial.print("T,");
-     Serial.println(stop_time,DEC); 
-     */
+  // Disable all 3 while we configure the SPI bus 
+  digitalWrite(CS_ARM,HIGH);
+  digitalWrite(CS_AUT,HIGH);
+  digitalWrite(CS_RA,HIGH);
+}
+
+/*
+void getAndSendPos(int CS_PIN) {
+   float pos_avg = 0;
+   int pos = 0;
+   int fail_count = 0;
+   for (int i=0; i<MEASUREMENT_COUNT && fail_count<MAX_TRIES; i++) { // get 10 measurements, or 10 fails then stop
+      pos = getPosition(CS_PIN);
+      if (pos == -1) { // encoder error, try again
+        fail_count++; 
+        i--;
+      } else {
+        pos_avg += pos;          
+      }
+      if (debug) Serial.println(pos,DEC); 
    }
- 
+   if (fail_count == MAX_TRIES) {
+     pos_avg = -1;
+   } else {
+     pos_avg /= (float)MEASUREMENT_COUNT;
+   }
+   if (debug) {
+     Serial.print("Average: " );
+     Serial.println(pos_avg,DEC); 
+   }
+
+}
+*/
+
+void resetEncoders() {
+  int ireset;
+  int reset_count = 100;
+  SPI.begin();
+  CS = CS_ARM;
+  if (debug) {
+    Serial.println("Resetting Arm");  
+  }
+  for (ireset=0; ireset<reset_count; ireset++) {
+    SPI_T(0xA5); //nop 
+    delay(1);
+  }  
+  CS = CS_RA;
+  if (debug) {
+    Serial.println("Resetting RA");  
+  }
+  for (ireset=0; ireset<reset_count; ireset++) {
+    SPI_T(0xA5); //nop     
+    delay(1);
+  }  
+  CS = CS_AUT;
+  if (debug) {
+    Serial.println("Resetting AUT");  
+  }
+  for (ireset=0; ireset<reset_count; ireset++) {
+   SPI_T(0xA5); //nop    
+   delay(1);
+  }  
+  SPI.end();
+}
+uint8_t SPI_T (uint8_t msg)    //Repetive SPI transmit sequence
+{
+  digitalWrite(CS,LOW);
+  uint8_t msg_temp = 0;  //vairable to hold recieved data
+  msg_temp = SPI.transfer(msg);    //send and recieve
+  digitalWrite(CS,HIGH);
+  return(msg_temp);      //return recieved byte
 }
 
 int getPosition() { // gets position of currently assigned Encoder, stored 2 bytes
@@ -142,7 +230,6 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
    int ABSposition = -1;
 
    SPI.begin();    //start transmition
-   //digitalWrite(CS,LOW);
    
    SPI_T(0x10);   //issue read command
    recieved = SPI_T(0x00);    //issue NOP to check if encoder is ready to send
@@ -161,30 +248,30 @@ int getPosition() { // gets position of currently assigned Encoder, stored 2 byt
        Serial.println(recieved,HEX);  
      }
      fail_count++;
-     delay(2);    //wait a bit
+     delay(2);    //wait a bit and try again
    }
-
-   temp[0] = SPI_T(0x00);    //Recieve MSB
-   temp[1] = SPI_T(0x00);    // recieve LSB   
-   if (debug) {
+   
+   if (recieved == 0x10) {
+     // Next two bytes are position
+     temp[0] = SPI_T(0x00);    //Recieve MSB
+     temp[1] = SPI_T(0x00);    // recieve LSB   
+     if (debug) {
        Serial.print("msb ");
        Serial.println(temp[0],HEX);  
        Serial.print("lsb ");
        Serial.println(temp[1],HEX);  
+     }  
+     // Store 12 bit result in integer
+     temp[0] &=~ 0xF0;    //mask out the first 4 bits
+     ABSposition = temp[0] << 8;    //shift MSB to correct ABSposition in ABSposition message
+     ABSposition += temp[1];    // add LSB to ABSposition message to complete message
    }
-   
-   
-//   digitalWrite(CS,HIGH);  
-   SPI.end();    //end transmition 
-   
-   temp[0] &=~ 0xF0;    //mask out the first 4 bits
-   ABSposition = temp[0] << 8;    //shift MSB to correct ABSposition in ABSposition message
-   ABSposition += temp[1];    // add LSB to ABSposition message to complete message
-   
-   // If result is incorrect, or we didn't get a response from the encoder, send back -1
-   if (ABSposition > 4096 || ABSposition < 0 || fail_count == MAX_TRIES) {
+   else {
+     // Failed to get position, send back -1
      ABSposition = -1;  
    }
+   SPI.end();    //end transmition 
+
    return ABSposition;
 }
 
@@ -298,11 +385,4 @@ uint8_t setZero(int CS_PIN) {
   return rec;
 }
 
-uint8_t SPI_T (uint8_t msg)    //Repetive SPI transmit sequence
-{
-   uint8_t msg_temp = 0;  //vairable to hold recieved data
-   digitalWrite(CS,LOW);     //select spi device
-   msg_temp = SPI.transfer(msg);    //send and recieve
-   digitalWrite(CS,HIGH);    //deselect spi device
-   return(msg_temp);      //return recieved byte
-}
+
