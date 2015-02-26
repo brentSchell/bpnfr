@@ -48,7 +48,7 @@ namespace VNA
             string freq_string = "SRT 2GHZ;STP 6GHZ;CWF "; // set start and stop frequencies
             freq_string += frequency + "GHZ;";
 
-            string command = "FMB;MSB;" + freq_string + "S21;RIM";
+            string command = "FMB;MSB;" + freq_string + "S21;MPH"; // RIM for real imag
             io.WriteString(command);
         }
 

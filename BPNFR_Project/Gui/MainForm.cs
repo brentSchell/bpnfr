@@ -25,9 +25,17 @@ namespace Gui
         Worker control_system_worker, flag_worker;
         Thread control_system_thread, progress_thread;
         string gpib_conn_string = "GPIB0::9::INSTR";
+        
+        // Results Images
         List<Image> images_list;
         int image_index = 0;
 
+        // Progress Image Properties
+        Image img_x_mag, img_x_phase, img_y_mag, img_y_phase;
+        Graphics g_x_mag, g_x_phase, g_y_mag, g_y_phase;
+        int iy_progress, ix_progress;
+
+        int iMeasurements;
         public MainForm()
         {
             InitializeComponent();
@@ -330,6 +338,8 @@ namespace Gui
                 lblScanStatus.Text += "Percentage Complete: " + 0 + " %\n";
                 lblScanStatus.Text += "Data File: " + Globals.FILENAME+ "\n";
 
+                
+
                 // Start background worker thread
                 if (!bwControlSystem.IsBusy)
                 {
@@ -337,9 +347,83 @@ namespace Gui
                     pbScan.Value = 0;
                     bwControlSystem.RunWorkerAsync();
                 }
-                //control_system_thread.Start();
             }
-                    
+             
+
+            // Create progress Images  
+            initProgressImages();
+                   
+            
+        }
+
+        private void initProgressImages()
+        {
+            img_x_mag = new Bitmap(200, 200);
+            img_x_phase = new Bitmap(200, 200);
+            img_y_mag = new Bitmap(200, 200);
+            img_y_phase = new Bitmap(200, 200);
+            g_x_mag = Graphics.FromImage(img_x_mag);
+            g_x_phase = Graphics.FromImage(img_x_phase);
+            g_y_mag = Graphics.FromImage(img_y_mag);
+            g_y_phase = Graphics.FromImage(img_y_phase);
+
+            g_x_mag.FillRectangle(new SolidBrush(Color.White), 0, 0, 200, 200);
+            g_x_phase.FillRectangle(new SolidBrush(Color.White), 0, 0, 200, 200);
+            g_y_mag.FillRectangle(new SolidBrush(Color.White), 0, 0, 200, 200);
+            g_y_phase.FillRectangle(new SolidBrush(Color.White), 0, 0, 200, 200);
+
+            pb_xmag.Image = img_x_mag;
+            pb_xphase.Image = img_x_phase;
+            pb_ymag.Image = img_y_mag;
+            pb_yphase.Image = img_y_phase;
+
+            ix_progress = 0;
+            iy_progress = 0;
+            
+        }
+
+        private void updateProgressImages()
+        {
+            string[] lines = File.ReadAllLines(Globals.FILENAME);
+            while (ix_progress + iy_progress < lines.Length)
+            {
+                string[] tokens = lines[ix_progress + iy_progress].Split(',');
+                float x = (float)Double.Parse(tokens[3]);
+                float y = (float)Double.Parse(tokens[4]);
+                double re = (float)Double.Parse(tokens[7]);
+                double im = (float)Double.Parse(tokens[8]);
+                
+                // TODO equn for color scaling
+                int r_mag = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                int g_mag = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                int b_mag = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                int r_phase = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                int g_phase = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                int b_phase = (int)(20.0 * Math.Log(Math.Sqrt(re * re + im * im)));
+                Color c_mag = Color.FromArgb(r_mag, g_mag, b_mag);
+                Color c_phase = Color.FromArgb(r_phase, g_phase, b_phase);
+                
+                // Plot point on x or y plot
+                // TODO get proper scaling for rectangle sizes
+                if (tokens[6] == "0")
+                {
+                    g_x_mag.FillRectangle(new SolidBrush(c_mag), x, y, 4, 4);
+                    g_x_phase.FillRectangle(new SolidBrush(c_phase), x, y, 4, 4);       
+                    ix_progress++;
+                }
+                else
+                {
+                    g_y_mag.FillRectangle(new SolidBrush(c_mag), x, y, 4, 4);
+                    g_y_phase.FillRectangle(new SolidBrush(c_phase), x, y, 4, 4);
+                    iy_progress++;
+                }
+
+            }
+            // Update display image
+            pb_xmag.Image = img_x_mag;
+            pb_xphase.Image = img_x_phase;
+            pb_ymag.Image = img_y_mag;
+            pb_yphase.Image = img_y_phase;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -447,8 +531,8 @@ namespace Gui
             try
             {
                 critical_angle = Double.Parse(txtBoxCriticalAngle.Text);
-                if (critical_angle <= 10.0 || critical_angle > 65.0)
-                    throw new Exception("Value must be between 10.0 and 65.0 degrees");
+                if (critical_angle <= 10.0 || critical_angle > 50.0)
+                    throw new Exception("Value must be between 10.0 and 50.0 degrees");
             }
             catch (Exception ex)
             {
@@ -460,7 +544,7 @@ namespace Gui
             try
             {
                 frequency = Double.Parse(txtBoxFrequency.Text);
-                if (frequency <= 2.0 || frequency >= 6.0) // %%
+                if (frequency <= 2.0 || frequency >= 6.0)
                     throw new Exception("Value must be between 2.0 and 6.0 GHz");
             }
             catch (Exception ex)
@@ -720,7 +804,8 @@ namespace Gui
             else if (Globals.MEASUREMENT_MODE == 1) // Continuous
             {
                 //runContinuousSystem();
-               runContinuousSystem2();
+                runContinuousSystem2();
+                //runTest();
             }
             else if (Globals.MEASUREMENT_MODE == 2) // Discrete
             {
@@ -744,10 +829,11 @@ namespace Gui
             double aut_pos = 0.0;
             double ra_pos = 0.0;
             double arm_pos = 0.0;
+            iMeasurements = 0;
+
             for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
 
-                int iMeasurements = 0;
                 arm_pos = encoder.getPosition(1);
                 ra_pos = encoder.getPosition(2);
                 aut_pos = encoder.getPosition(3);
@@ -767,7 +853,6 @@ namespace Gui
                     aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
                     // Save measurement
                     saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
-                    iMeasurements++;
                 }
 
                 if (!bwControlSystem.CancellationPending)
@@ -793,7 +878,6 @@ namespace Gui
                     aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
                     // Save measurement
                     saveMeasurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
-                    iMeasurements++;
                 }
 
                 if (!bwControlSystem.CancellationPending)
@@ -850,9 +934,11 @@ namespace Gui
                     // Get position
                     double ra_pos1 = encoder.getPosition(2);
                     double aut_pos1 = encoder.getPosition(3);
+                    arm_pos = encoder.getPosition(1);
+
                     // Get VNA data
                     double[] data = vna.OutputFinalData();
-                    //double[] data = { 0, 0 };
+                    
                     // Get second position measurement, calculate mean position
                     ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
                     aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
@@ -883,6 +969,8 @@ namespace Gui
                     // Get position
                     double ra_pos1 = encoder.getPosition(2);
                     double aut_pos1 = encoder.getPosition(3);
+                    arm_pos = encoder.getPosition(1);
+
                     // Get VNA data
                     double[] data = vna.OutputFinalData();
 
@@ -920,9 +1008,64 @@ namespace Gui
                     }
                     */
                     // Wait settling time for arm movement
-                    Thread.Sleep(2000);
+                    Thread.Sleep(5000);
                 }
             }
+        }
+
+        private void runTest()
+        {
+            int i = 3;
+            while (i > -3)
+            {
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_OUTWARD);
+                DateTime start_time = DateTime.Now;
+                TimeSpan total_time = TimeSpan.Zero;
+                bool facingX = false;
+                while (!bwControlSystem.CancellationPending && total_time.Seconds < 30)
+                {
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+                    //double[] data = { 0, 0 };
+                    // Get second position measurement, calculate mean position
+                    double ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    double aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Save measurement
+                    saveMeasurement(5.0, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //list_one_radius.Add(m);
+                    //iMeasurements++;
+                    Thread.Sleep(10);
+                    total_time = DateTime.Now - start_time;
+                }
+                start_time = DateTime.Now;
+                total_time = TimeSpan.Zero;
+                controller1.runSequence(Globals.SEQ_RA_AUT_360_INWARD);
+
+                while (!bwControlSystem.CancellationPending && total_time.Seconds < 30)
+                {
+                    // Get position
+                    double ra_pos1 = encoder.getPosition(2);
+                    double aut_pos1 = encoder.getPosition(3);
+                    // Get VNA data
+                    double[] data = vna.OutputFinalData();
+                    //double[] data = { 0, 0 };
+                    // Get second position measurement, calculate mean position
+                    double ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
+                    double aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
+                    // Save measurement
+                    saveMeasurement(5.0, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //Measurement m = new Measurement(arm_pos, ra_pos, aut_pos, facingX, data[0], data[1]);
+                    //list_one_radius.Add(m);
+                    //iMeasurements++;
+                    Thread.Sleep(10);
+                    total_time = DateTime.Now - start_time;
+                }
+            }
+
         }
         
         private void runDiscreteSystem5()
@@ -1170,6 +1313,7 @@ namespace Gui
         {
             Measurement m = new Measurement(arm_deg, ra_deg, aut_deg, facingX, re, im);
             m.appendToFile(Globals.FILENAME);
+            iMeasurements++;
         }
         
         private void saveReading(double arm_deg, double ra_deg, double aut_deg, bool facingX, double re, double im)
@@ -1480,6 +1624,11 @@ namespace Gui
                 pbImage.Image = images_list[image_index];
                 pbImage.SizeMode = PictureBoxSizeMode.StretchImage;
             }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
 
     }
