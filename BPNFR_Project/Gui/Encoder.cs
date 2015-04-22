@@ -90,11 +90,6 @@ namespace Gui
 
             return response;
         }
-        public int setZeroPoint()
-        {
-            //TODO
-            return -1;
-        }
     }
 }
 

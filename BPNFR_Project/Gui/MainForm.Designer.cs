@@ -66,6 +66,14 @@
             this.cmbBoxEncoder = new System.Windows.Forms.ComboBox();
             this.tabOperation = new System.Windows.Forms.TabPage();
             this.pbScan = new System.Windows.Forms.ProgressBar();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.pb_yphase = new System.Windows.Forms.PictureBox();
+            this.pb_ymag = new System.Windows.Forms.PictureBox();
+            this.pb_xphase = new System.Windows.Forms.PictureBox();
+            this.pb_xmag = new System.Windows.Forms.PictureBox();
+            this.stOperation = new System.Windows.Forms.ToolStrip();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblScanStatus = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -99,7 +107,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.btnStartMatlab = new System.Windows.Forms.Button();
-            this.tabCalibration = new System.Windows.Forms.TabPage();
             this.indicatorCont1Connection = new System.Windows.Forms.Button();
             this.indicatorCont2Connection = new System.Windows.Forms.Button();
             this.indicatorEncoderConnection = new System.Windows.Forms.Button();
@@ -111,14 +118,6 @@
             this.lblMainInfo = new System.Windows.Forms.Label();
             this.lblStat = new System.Windows.Forms.Label();
             this.lblSysState = new System.Windows.Forms.Label();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.stOperation = new System.Windows.Forms.ToolStrip();
-            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
-            this.pb_xmag = new System.Windows.Forms.PictureBox();
-            this.pb_xphase = new System.Windows.Forms.PictureBox();
-            this.pb_ymag = new System.Windows.Forms.PictureBox();
-            this.pb_yphase = new System.Windows.Forms.PictureBox();
             this.tabControl1.SuspendLayout();
             this.tabConfiguration.SuspendLayout();
             this.grpBoxSummary.SuspendLayout();
@@ -126,6 +125,12 @@
             this.grpBoxMeasurementOptions.SuspendLayout();
             this.grpBoxSerialConnections.SuspendLayout();
             this.tabOperation.SuspendLayout();
+            this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_yphase)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_ymag)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_xphase)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_xmag)).BeginInit();
+            this.stOperation.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -134,12 +139,6 @@
             this.tsImages.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbImage)).BeginInit();
             this.groupBox4.SuspendLayout();
-            this.panel2.SuspendLayout();
-            this.stOperation.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_xmag)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_xphase)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_ymag)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_yphase)).BeginInit();
             this.SuspendLayout();
             // 
             // lblEncoderPositions
@@ -155,7 +154,6 @@
             this.tabControl1.Controls.Add(this.tabConfiguration);
             this.tabControl1.Controls.Add(this.tabOperation);
             this.tabControl1.Controls.Add(this.tabResults);
-            this.tabControl1.Controls.Add(this.tabCalibration);
             this.tabControl1.Location = new System.Drawing.Point(17, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -171,7 +169,7 @@
             this.tabConfiguration.Location = new System.Drawing.Point(4, 22);
             this.tabConfiguration.Name = "tabConfiguration";
             this.tabConfiguration.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConfiguration.Size = new System.Drawing.Size(796, 350);
+            this.tabConfiguration.Size = new System.Drawing.Size(868, 475);
             this.tabConfiguration.TabIndex = 0;
             this.tabConfiguration.Text = "Configuration";
             this.tabConfiguration.UseVisualStyleBackColor = true;
@@ -534,6 +532,80 @@
             this.pbScan.TabIndex = 23;
             this.pbScan.Visible = false;
             // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.pb_yphase);
+            this.panel2.Controls.Add(this.pb_ymag);
+            this.panel2.Controls.Add(this.pb_xphase);
+            this.panel2.Controls.Add(this.pb_xmag);
+            this.panel2.Controls.Add(this.stOperation);
+            this.panel2.Location = new System.Drawing.Point(402, 6);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(453, 463);
+            this.panel2.TabIndex = 25;
+            // 
+            // pb_yphase
+            // 
+            this.pb_yphase.Location = new System.Drawing.Point(218, 247);
+            this.pb_yphase.Name = "pb_yphase";
+            this.pb_yphase.Size = new System.Drawing.Size(200, 200);
+            this.pb_yphase.TabIndex = 26;
+            this.pb_yphase.TabStop = false;
+            // 
+            // pb_ymag
+            // 
+            this.pb_ymag.Location = new System.Drawing.Point(12, 247);
+            this.pb_ymag.Name = "pb_ymag";
+            this.pb_ymag.Size = new System.Drawing.Size(200, 200);
+            this.pb_ymag.TabIndex = 25;
+            this.pb_ymag.TabStop = false;
+            // 
+            // pb_xphase
+            // 
+            this.pb_xphase.Location = new System.Drawing.Point(218, 28);
+            this.pb_xphase.Name = "pb_xphase";
+            this.pb_xphase.Size = new System.Drawing.Size(200, 200);
+            this.pb_xphase.TabIndex = 24;
+            this.pb_xphase.TabStop = false;
+            // 
+            // pb_xmag
+            // 
+            this.pb_xmag.Location = new System.Drawing.Point(12, 28);
+            this.pb_xmag.Name = "pb_xmag";
+            this.pb_xmag.Size = new System.Drawing.Size(200, 200);
+            this.pb_xmag.TabIndex = 23;
+            this.pb_xmag.TabStop = false;
+            // 
+            // stOperation
+            // 
+            this.stOperation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripButton3,
+            this.toolStripButton4});
+            this.stOperation.Location = new System.Drawing.Point(0, 0);
+            this.stOperation.Name = "stOperation";
+            this.stOperation.Size = new System.Drawing.Size(453, 25);
+            this.stOperation.TabIndex = 0;
+            // 
+            // toolStripButton3
+            // 
+            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
+            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton3.Text = "<";
+            // 
+            // toolStripButton4
+            // 
+            this.toolStripButton4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
+            this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton4.Name = "toolStripButton4";
+            this.toolStripButton4.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButton4.Text = ">";
+            this.toolStripButton4.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.lblScanStatus);
@@ -634,7 +706,7 @@
             this.tabResults.Controls.Add(this.groupBox4);
             this.tabResults.Location = new System.Drawing.Point(4, 22);
             this.tabResults.Name = "tabResults";
-            this.tabResults.Size = new System.Drawing.Size(958, 475);
+            this.tabResults.Size = new System.Drawing.Size(868, 475);
             this.tabResults.TabIndex = 2;
             this.tabResults.Text = "Results";
             this.tabResults.UseVisualStyleBackColor = true;
@@ -883,15 +955,6 @@
             this.btnStartMatlab.UseVisualStyleBackColor = true;
             this.btnStartMatlab.Click += new System.EventHandler(this.btnStartMatlab_Click);
             // 
-            // tabCalibration
-            // 
-            this.tabCalibration.Location = new System.Drawing.Point(4, 22);
-            this.tabCalibration.Name = "tabCalibration";
-            this.tabCalibration.Size = new System.Drawing.Size(958, 475);
-            this.tabCalibration.TabIndex = 3;
-            this.tabCalibration.Text = "Calibration";
-            this.tabCalibration.UseVisualStyleBackColor = true;
-            // 
             // indicatorCont1Connection
             // 
             this.indicatorCont1Connection.BackColor = System.Drawing.Color.Red;
@@ -946,7 +1009,7 @@
             // 
             this.btnEStop.BackColor = System.Drawing.SystemColors.Control;
             this.btnEStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnEStop.Location = new System.Drawing.Point(700, 12);
+            this.btnEStop.Location = new System.Drawing.Point(762, 12);
             this.btnEStop.Name = "btnEStop";
             this.btnEStop.Size = new System.Drawing.Size(121, 47);
             this.btnEStop.TabIndex = 11;
@@ -1005,81 +1068,7 @@
             this.lblSysState.Name = "lblSysState";
             this.lblSysState.Size = new System.Drawing.Size(200, 30);
             this.lblSysState.TabIndex = 23;
-            this.lblSysState.Text = "Unconfigured";
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.pb_yphase);
-            this.panel2.Controls.Add(this.pb_ymag);
-            this.panel2.Controls.Add(this.pb_xphase);
-            this.panel2.Controls.Add(this.pb_xmag);
-            this.panel2.Controls.Add(this.stOperation);
-            this.panel2.Location = new System.Drawing.Point(402, 6);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(453, 463);
-            this.panel2.TabIndex = 25;
-            // 
-            // stOperation
-            // 
-            this.stOperation.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton3,
-            this.toolStripButton4});
-            this.stOperation.Location = new System.Drawing.Point(0, 0);
-            this.stOperation.Name = "stOperation";
-            this.stOperation.Size = new System.Drawing.Size(453, 25);
-            this.stOperation.TabIndex = 0;
-            // 
-            // toolStripButton3
-            // 
-            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
-            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton3.Name = "toolStripButton3";
-            this.toolStripButton3.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton3.Text = "<";
-            // 
-            // toolStripButton4
-            // 
-            this.toolStripButton4.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
-            this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton4.Name = "toolStripButton4";
-            this.toolStripButton4.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton4.Text = ">";
-            this.toolStripButton4.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // pb_xmag
-            // 
-            this.pb_xmag.Location = new System.Drawing.Point(12, 28);
-            this.pb_xmag.Name = "pb_xmag";
-            this.pb_xmag.Size = new System.Drawing.Size(200, 200);
-            this.pb_xmag.TabIndex = 23;
-            this.pb_xmag.TabStop = false;
-            // 
-            // pb_xphase
-            // 
-            this.pb_xphase.Location = new System.Drawing.Point(218, 28);
-            this.pb_xphase.Name = "pb_xphase";
-            this.pb_xphase.Size = new System.Drawing.Size(200, 200);
-            this.pb_xphase.TabIndex = 24;
-            this.pb_xphase.TabStop = false;
-            // 
-            // pb_ymag
-            // 
-            this.pb_ymag.Location = new System.Drawing.Point(12, 247);
-            this.pb_ymag.Name = "pb_ymag";
-            this.pb_ymag.Size = new System.Drawing.Size(200, 200);
-            this.pb_ymag.TabIndex = 25;
-            this.pb_ymag.TabStop = false;
-            // 
-            // pb_yphase
-            // 
-            this.pb_yphase.Location = new System.Drawing.Point(218, 247);
-            this.pb_yphase.Name = "pb_yphase";
-            this.pb_yphase.Size = new System.Drawing.Size(200, 200);
-            this.pb_yphase.TabIndex = 26;
-            this.pb_yphase.TabStop = false;
+            this.lblSysState.Text = "Idle";
             // 
             // MainForm
             // 
@@ -1111,6 +1100,14 @@
             this.grpBoxSerialConnections.ResumeLayout(false);
             this.grpBoxSerialConnections.PerformLayout();
             this.tabOperation.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_yphase)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_ymag)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_xphase)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_xmag)).EndInit();
+            this.stOperation.ResumeLayout(false);
+            this.stOperation.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -1125,14 +1122,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbImage)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
-            this.stOperation.ResumeLayout(false);
-            this.stOperation.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_xmag)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_xphase)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_ymag)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_yphase)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1221,7 +1210,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox txtBoxPhis;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TabPage tabCalibration;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.ToolStrip stOperation;
         private System.Windows.Forms.ToolStripButton toolStripButton3;

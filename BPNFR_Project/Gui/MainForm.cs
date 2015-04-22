@@ -348,8 +348,9 @@ namespace Gui
                     bwControlSystem.RunWorkerAsync();
                 }
             }
-             
 
+            btnRunSystem.Enabled = false;
+            btnStopScan.Enabled = true;
             // Create progress Images  
             initProgressImages();
                    
@@ -576,18 +577,18 @@ namespace Gui
             double max_step_angle = Math.Acos(1 - (wavelength * wavelength) / (8 * Globals.ARM_LENGTH * Globals.ARM_LENGTH));
             max_step_angle *= 180.0 / Math.PI;
 
-            double time_factor = 0.0;
+            double seconds_between_arm = 0.0;
             if (cmbBoxMeasurementMode.SelectedIndex == 0) // Discrete
             {
-                time_factor = 500;
+                seconds_between_arm = 15 * 60; // seconds between arm sweeps
                 Globals.MEASUREMENT_MODE = 2; 
             }
             else if (cmbBoxMeasurementMode.SelectedIndex == 1) // Continuous
             {
-                time_factor = 1000;
+                seconds_between_arm = 90; // seconds between arm sweeps
                 Globals.MEASUREMENT_MODE = 1; 
             }
-            double duration_estimate = (sweep_angle/max_step_angle)*(360.0/max_step_angle)*time_factor/60.0/60.0;
+            double duration_estimate = (sweep_angle/max_step_angle)*seconds_between_arm/60.0/60.0;
 
             // Store important variables to globals, to be used by motors
             Globals.SWEEP_ANGLE = Math.Round(sweep_angle,2); // %% Round to 2 decimal places
@@ -919,6 +920,8 @@ namespace Gui
             List<Measurement> list_one_radius;
             for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
+                bwControlSystem.ReportProgress((int)(arm_deg/Globals.SWEEP_ANGLE));
+
                 list_one_radius = new List<Measurement>();
                 int iMeasurements = 0;
                 arm_pos = encoder.getPosition(1);
@@ -938,7 +941,7 @@ namespace Gui
 
                     // Get VNA data
                     double[] data = vna.OutputFinalData();
-                    
+
                     // Get second position measurement, calculate mean position
                     ra_pos = (encoder.getPosition(2) + ra_pos1) / 2.0;
                     aut_pos = (encoder.getPosition(3) + aut_pos1) / 2.0;
@@ -1267,6 +1270,7 @@ namespace Gui
             c.SetSpeed(motor_id, v, vs, t);
 
             double current_pos = encoder.getPosition(encoder_id);
+
             home_angle = 0.0;
 
             if (current_pos == -1) {
@@ -1297,7 +1301,11 @@ namespace Gui
                 }
 
                 // Get new motor position
+                DateTime start = DateTime.Now;
+
                 current_pos = encoder.getPosition(encoder_id);
+                TimeSpan dt = DateTime.Now - start;
+
                 if (current_pos == 360.0) current_pos = 0;
 
                 if (current_pos == -1)
@@ -1398,6 +1406,8 @@ namespace Gui
             {
                 bwControlSystem.CancelAsync();
             }
+            btnRunSystem.Enabled = false;
+            btnStopScan.Enabled = true;
         }
 
         private void btnStartMatlab_Click(object sender, EventArgs e)
@@ -1500,6 +1510,7 @@ namespace Gui
             // --------------------------
             // Start Matlab process
             // --------------------------
+            
             Globals.SYS_STATE = State.PostProcessing;
             lblSysState.Text = "Calculating Far-Field";
 
@@ -1508,16 +1519,18 @@ namespace Gui
             // Disable button
             btnStartMatlab.Text = "Calculating...";
             btnStartMatlab.Enabled = false;   
+             
         }
 
         // Post processing
         private void bwMatlab_DoWork(object sender, DoWorkEventArgs e)
         {
+            /*
             string matlab_exe = Directory.GetCurrentDirectory() + "\\MATLAB\\nf_ff_transformation.exe";
             string settings_file = Directory.GetCurrentDirectory() + "\\MATLAB\\settings.txt";
-            string data_file = Directory.GetCurrentDirectory() + "\\res2.txt";
+            string data_file = Directory.GetCurrentDirectory() + "\\MATLAB\\first_test_data.txt";
             Start_MATLAB_Compiler_EXE(matlab_exe, settings_file, data_file);
-
+            */
         }
 
         private void bwMatlab_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -1549,18 +1562,29 @@ namespace Gui
             // Load new images
 
             // Near-field
-            Image nf = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_nf_p_linear.jpg");
-            images_list.Add(nf);
+          //  Image nf = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_nf_p_linear.jpg");
+          //  images_list.Add(nf);
 
             // Get all phase cut images
             for (int i = 0; i < 2; i++)
             {
                 Image img = null;
                 if (i == 0)
-                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_ff_p_phi = 0.0 Degree Cut.jpg");
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im1.jpg");
                 else if (i == 1)
-                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\sim1_norm_ff_p_phi = 45.0 Degree Cut.jpg");
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im2.jpg");
+                else if (i ==2 )
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im3.jpg");
+                else if (i == 3)
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im4.jpg");
+                else if (i == 4)
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im5.jpg");
+                else if (i == 5)
+                    img = Image.FromFile(Directory.GetCurrentDirectory() + "\\MATLAB\\im6.jpg");
+
+
                 images_list.Add(img);
+                
             }
 
             // Set first image on display
