@@ -5,6 +5,7 @@ int CS_ARM = 4;
 int CS_RA = 3;
 int CS_AUT = 5;
 int CS = 3; 
+int POWER_PIN = 7;
 int MAX_TRIES = 50;
 int MEASUREMENT_COUNT = 1;
 uint16_t ABSposition_last = 0;
@@ -18,11 +19,13 @@ void setup()
   pinMode(CS_ARM,OUTPUT);
   pinMode(CS_AUT,OUTPUT);
   pinMode(CS_RA,OUTPUT);
+  pinMode(POWER_PIN,OUTPUT);
    
   // Disable all 3 while we configure the SPI bus 
   digitalWrite(CS_ARM,HIGH);
   digitalWrite(CS_AUT,HIGH);
   digitalWrite(CS_RA,HIGH);
+  digitalWrite(POWER_PIN,HIGH);
   
   // Configure SPI
   SPI.begin();
@@ -124,7 +127,7 @@ void loop()
      Serial.print(r,HEX);
      Serial.write("\n");
    } else if (command == 0x36) { // Set Encoder 2 (RA) Zero  ASCII '6'
-     Serial.println("Starting zeroing Arm...");
+     Serial.println("Starting zeroing RA...");
      digitalWrite(CS_RA,LOW);
      uint8_t r = setZero(CS_RA);     
      digitalWrite(CS_RA,HIGH);
@@ -189,6 +192,12 @@ void getAndSendPos(int CS_PIN) {
 void resetEncoders() {
   int ireset;
   int reset_count = 100;
+  
+  // Turn encoders off and back on
+  digitalWrite(POWER_PIN,LOW);
+  delay(5000);
+  digitalWrite(POWER_PIN,HIGH);
+
   SPI.begin();
   CS = CS_ARM;
   if (debug) {
