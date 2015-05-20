@@ -80,8 +80,8 @@ namespace Gui
             {
                 arduino_port = new SerialPort();
                 // %%temp
-                //arduino_port.PortName = arduino_com_port;
-                arduino_port.PortName = "COM10";
+                arduino_port.PortName = arduino_com_port;
+                //arduino_port.PortName = "COM10";
                 
                 arduino_port.BaudRate = 115200;
                 arduino_port.WriteTimeout = 2000;
@@ -105,8 +105,8 @@ namespace Gui
             {
                 cont1_port = new SerialPort();
                 // %% temp
-                //cont1_port.PortName = cont1_com_port;
-                cont1_port.PortName = "COM11";
+                cont1_port.PortName = cont1_com_port;
+                //cont1_port.PortName = "COM11";
                 cont1_port.BaudRate = 9600;
                 cont1_port.WriteTimeout = 2000;
                 cont1_port.ReadTimeout = 20000;
@@ -130,8 +130,8 @@ namespace Gui
             {
                 cont2_port = new SerialPort();
                 // %% temp
-                //cont2_port.PortName = cont2_com_port;
-                cont2_port.PortName = "COM13";
+                cont2_port.PortName = cont2_com_port;
+                //cont2_port.PortName = "COM13";
                 cont2_port.BaudRate = 9600;
                 cont2_port.WriteTimeout = 100;
                 cont2_port.ReadTimeout = 1000;
@@ -653,13 +653,13 @@ namespace Gui
             BackgroundWorker worker = sender as BackgroundWorker;
 
             // Everything is configured properly, we can generate and send the sequences.
-
+            
             // 1. Init all motors
             controller1.InitMotor(1);
             controller1.InitMotor(2);
             controller2.InitMotor(1);
             bool result = true;
-
+            
             // 2. Load required control sequences to motors
             if (Globals.MEASUREMENT_MODE == 1) // Continuous 
             {
@@ -717,8 +717,67 @@ namespace Gui
             }
             
             // 3. Configure VNA
-            vna.ConfigureVNA(Globals.FREQUENCY);
+            if (result) vna.ConfigureVNA(Globals.FREQUENCY);
+            
+            // 4. Ensure Encoders are functional
+            if (result)
+            {
+                bool encodersWorking = false;
+                int max_tries = 3;
+                int try_count = 0;
+                while (!encodersWorking && try_count < max_tries)
+                {
+                    // Test AUT encoder
+                    double testDegree = 10.0;
+                    double p1 = encoder.getPosition(3);
+                    controller1.IncMotor(1, testDegree, true);
+                    double p2 = encoder.getPosition(3);
+                    controller1.IncMotor(1, -testDegree, true);
+                    
+                    if (p1 > 180) p1 -= 360;
+                    if (p2 > 180) p2 -= 360;
+                    if (p1 != -1 && p2 != -1 && Math.Abs(Math.Abs(p2 - p1) - testDegree) < 2)
+                    {
+                        encodersWorking = true;
+                    }
+                    else
+                    {
+                        // Disconnect
+                        string encoder_com = arduino_port.PortName;
+                        if (encoder_com == null) encoder_com = "na";
+                        
+                        arduino_port.Close();
+                        encoder = null;
 
+                        // Connect
+                        arduino_port = new SerialPort();
+                        // %%temp
+                        arduino_port.PortName = encoder_com;
+                        //arduino_port.PortName = "COM10";
+
+                        arduino_port.BaudRate = 115200;
+                        arduino_port.WriteTimeout = 2000;
+                        arduino_port.ReadTimeout = 2000;
+
+                        try
+                        {
+                            arduino_port.Open();
+                            encoder = new Encoder(arduino_port);
+                            Globals.FLAG_ENCODER_CONNECTED = true;
+                        }
+                        catch
+                        {
+                            Globals.FLAG_ENCODER_CONNECTED = false;
+                        }
+                        
+                    }
+                    try_count++;
+                }
+                if (!encodersWorking)
+                {
+                    MessageBox.Show("The AUT encoder is not functioning properly. Try re-connecting the Arduino.");
+                }
+            }
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -788,7 +847,7 @@ namespace Gui
         {
             if (Globals.SYS_STATE == State.Zeroing) // Zero System
             {
-                bool res;
+                bool res = true;
                 res = runZeroMotor(1, 2, 0.0);    // ra
                 if (res) res = runZeroMotor(2, 1, 0.0);  // arm
                 if (res) res = runZeroMotor(1, 1, 0.0);    // aut
@@ -920,7 +979,7 @@ namespace Gui
             List<Measurement> list_one_radius;
             for (double arm_deg = 0.0; !bwControlSystem.CancellationPending && arm_deg < Globals.SWEEP_ANGLE; arm_deg += Globals.STEP_ANGLE)
             {
-                bwControlSystem.ReportProgress((int)(arm_deg/Globals.SWEEP_ANGLE));
+                bwControlSystem.ReportProgress((int)(100.0 * arm_deg/Globals.SWEEP_ANGLE));
 
                 list_one_radius = new List<Measurement>();
                 int iMeasurements = 0;
@@ -1251,6 +1310,8 @@ namespace Gui
                 c = controller2;
                 encoder_id = 1;
             }
+
+
             // Configure motor speed (Arm motor needs to be slow, others can be fast)
             double v, vs, t;
             if (controller_id == 2 && motor_id == 1)
@@ -1270,7 +1331,11 @@ namespace Gui
             c.SetSpeed(motor_id, v, vs, t);
 
             double current_pos = encoder.getPosition(encoder_id);
-
+            if (controller_id == 1 && motor_id == 1) // AUT
+            {
+                current_pos *= -1;
+            }
+            
             home_angle = 0.0;
 
             if (current_pos == -1) {
@@ -1304,6 +1369,10 @@ namespace Gui
                 DateTime start = DateTime.Now;
 
                 current_pos = encoder.getPosition(encoder_id);
+                if (controller_id == 1 && motor_id == 1) // AUT
+                {
+                    current_pos *= -1;
+                }
                 TimeSpan dt = DateTime.Now - start;
 
                 if (current_pos == 360.0) current_pos = 0;
@@ -1651,6 +1720,11 @@ namespace Gui
         }
 
         private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblMainInfo_Click(object sender, EventArgs e)
         {
 
         }
