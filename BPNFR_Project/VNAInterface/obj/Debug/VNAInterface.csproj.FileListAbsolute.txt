@@ -1,7 +1,0 @@
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\obj\Debug\VNAInterface.csprojResolveAssemblyReference.cache
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\obj\Debug\VNAInterface.csproj.ResolveComReference.cache
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\bin\Debug\VNAInterface.dll
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\bin\Debug\VNAInterface.pdb
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\bin\Debug\Ivi.Visa.Interop.dll
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\obj\Debug\VNAInterface.dll
-C:\Users\niuc\Documents\GitHub\bpnfr\BPNFR_Project\VNAInterface\obj\Debug\VNAInterface.pdb

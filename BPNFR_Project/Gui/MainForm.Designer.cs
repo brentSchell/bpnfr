@@ -1042,13 +1042,12 @@
             // lblMainInfo
             // 
             this.lblMainInfo.AutoSize = true;
-            this.lblMainInfo.Location = new System.Drawing.Point(54, -5);
+            this.lblMainInfo.Location = new System.Drawing.Point(18, 12);
             this.lblMainInfo.MaximumSize = new System.Drawing.Size(250, 100);
             this.lblMainInfo.Name = "lblMainInfo";
             this.lblMainInfo.Size = new System.Drawing.Size(225, 13);
             this.lblMainInfo.TabIndex = 21;
             this.lblMainInfo.Text = "Bi-Polar Planar Near Field Measurment System";
-            this.lblMainInfo.Click += new System.EventHandler(this.lblMainInfo_Click);
             // 
             // lblStat
             // 
